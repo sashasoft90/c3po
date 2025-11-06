@@ -10,8 +10,8 @@ const navBarItems: NavBarItem[] = [
 		active: true
 	},
 	{
-		title: 'Calendar',
-		href: '/calendar',
+		title: 'Planner',
+		href: '/planner',
 		icon: CalendarDays,
 		active: true
 	}
