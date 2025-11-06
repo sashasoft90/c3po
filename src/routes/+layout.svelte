@@ -1,8 +1,8 @@
 <script lang="ts">
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
-	import NavBar from '@/widgets/nav-bar/nav-bar.svelte';
-	import navBarItems from '$lib/pages/store/routes';
+	import favicon from '@/app/assets/favicon.svg';
+	import { NavBar } from '@/widgets/nav-bar';
+	import { default as navBarItems } from '@/entities/nav-bar';
 
 	let { children } = $props();
 	let pageTitle = $state<string | undefined>(undefined);
