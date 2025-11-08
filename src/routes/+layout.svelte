@@ -19,7 +19,7 @@
 
 <div id="body-wrapper" class="flex min-h-screen flex-col">
 	<NavBar {navBarItems} bind:pageTitle></NavBar>
-	<div class="m-2 p-2">
+	<div class="m-2">
 		{@render children?.()}
 	</div>
 </div>
