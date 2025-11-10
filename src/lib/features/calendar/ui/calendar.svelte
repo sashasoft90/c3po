@@ -1,14 +1,18 @@
 <script lang="ts">
-	import { getLocalTimeZone, today, type DateValue } from '@internationalized/date';
-	import CalendarPlusIcon from '@lucide/svelte/icons/calendar-plus';
-	import { Button } from '@/shared/ui/button';
+	import { type DateValue, getLocalTimeZone, today } from '@internationalized/date';
 	import Calendar from '../../../shared/ui/calendar/calendar.svelte';
+	// noinspection ES6UnusedImports
 	import * as Drawer from '@/shared/ui/drawer';
-	import { Label } from '@/shared/ui/label';
+	import { Button } from '@/shared/ui/button';
+	// noinspection ES6UnusedImports
+	import CalendarPlusIcon from '@lucide/svelte/icons/calendar-plus';
+	import { cn } from '@/shared/utils';
 
 	let open = $state(false);
 	let value = $state<DateValue | undefined>();
 	const id = $props.id();
+
+	let { class: className } = $props();
 
 	const triggerLabel = $derived.by(() => {
 		if (value) return value.toDate(getLocalTimeZone()).toLocaleDateString();
@@ -16,21 +20,22 @@
 	});
 </script>
 
-<div class="flex flex-col gap-3">
+<div class={cn('flex flex-col gap-3', className)}>
 	<Drawer.Root bind:open>
 		<Drawer.Trigger id="{id}-date">
 			{#snippet child({ props })}
-				<Button {...props} variant="outline" class="w-48 justify-between font-normal">
+				<Button {...props} variant="outline" class="justify-between font-normal">
 					{triggerLabel}
 					<CalendarPlusIcon />
 				</Button>
 			{/snippet}
 		</Drawer.Trigger>
 		<Drawer.Content class="w-auto overflow-hidden p-0">
-			<Drawer.Header class="sr-only">
-				<Drawer.Title>Select date</Drawer.Title>
-				<Drawer.Description>Set your date of birth</Drawer.Description>
-			</Drawer.Header>
+			<!-- todo: sr-only is useful for not seeing frames			-->
+			<!--			<Drawer.Header class="sr-only">-->
+			<!--				<Drawer.Title>Select date</Drawer.Title>-->
+			<!--				<Drawer.Description>Set your date of birth</Drawer.Description>-->
+			<!--			</Drawer.Header>-->
 			<Calendar
 				type="single"
 				bind:value
