@@ -1,38 +1,53 @@
-# sv
+# C3PO
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Современное веб-приложение для планирования, построенное на SvelteKit с использованием Feature-Sliced Design архитектуры.
 
-## Creating a project
+## 🚀 Быстрый старт
 
-If you're seeing this, you've probably already done this step. Congrats!
+```bash
+# Установка зависимостей
+pnpm install
 
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+# Запуск dev-сервера
+pnpm dev
 ```
 
-## Developing
+## 📦 Основные команды
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```bash
+pnpm dev          # Development server
+pnpm build        # Production build
+pnpm preview      # Preview production build
+pnpm check        # Type checking
+pnpm lint         # Linting
+pnpm format       # Code formatting
 ```
 
-## Building
+## 🏗️ Tech Stack
 
-To create a production version of your app:
+- **SvelteKit** + **Svelte 5** - UI framework с новыми runes
+- **TypeScript** - Type safety
+- **Feature-Sliced Design** - Архитектурная методология
+- **TailwindCSS v4** - Styling
+- **shadcn-svelte** - UI components
 
-```sh
-npm run build
+## 📚 Документация
+
+Детальная документация находится в папке [`docs/`](./docs/):
+
+- [**Architecture**](./docs/architecture.md) - Описание архитектуры и FSD patterns
+- [**Contributing**](./docs/contributing.md) - Правила разработки и workflow
+- [**Components**](./docs/components.md) - Документация переиспользуемых компонентов
+- [**Style Guide**](./docs/style-guide.md) - Code style и conventions
+
+**Для Claude Code AI:** см. [CLAUDE.md](./CLAUDE.md)
+
+## 🔗 Path Aliases
+
+```typescript
+@/*  →  src/lib/*
 ```
 
-You can preview the production build with `npm run preview`.
+## 📄 License
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Private project.
