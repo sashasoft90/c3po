@@ -1,3 +1,3 @@
-import ModeWatcherToggle from './mode-watcher-toggle.svelte';
+import ModeWatcherToggle from "./mode-watcher-toggle.svelte";
 
 export { ModeWatcherToggle };

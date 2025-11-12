@@ -1,10 +1,10 @@
-import type { Icon } from '@/shared/types';
+import type { Icon } from "@/shared/types";
 
 interface NavBarItem {
-	title: string;
-	href: string;
-	icon: Icon;
-	active: boolean;
+  title: string;
+  href: string;
+  icon: Icon;
+  active: boolean;
 }
 
 export type { NavBarItem };

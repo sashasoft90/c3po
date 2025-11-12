@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Calender } from '@/features/calender';
+  import { Calender } from "@/features/calender";
 </script>
 
 <Calender />

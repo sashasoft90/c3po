@@ -9,6 +9,7 @@ C3PO is a SvelteKit application built with TypeScript, using Svelte 5's new reac
 ## Development Commands
 
 ### Core Commands
+
 - `pnpm dev` - Start development server
 - `pnpm build` - Build for production
 - `pnpm preview` - Preview production build
@@ -18,6 +19,7 @@ C3PO is a SvelteKit application built with TypeScript, using Svelte 5's new reac
 - `pnpm format` - Format all files with prettier
 
 ### Package Manager
+
 This project uses `pnpm` as the package manager (version 10.19.0+). Always use `pnpm` commands, not `npm` or `yarn`.
 
 ## Architecture: Feature-Sliced Design (FSD)
@@ -25,6 +27,7 @@ This project uses `pnpm` as the package manager (version 10.19.0+). Always use `
 The codebase follows Feature-Sliced Design methodology with strict layer hierarchy. Code is organized in `src/lib/` with the following layers (from highest to lowest):
 
 ### Layer Structure
+
 ```
 src/lib/
 ├── app/          # Application-wide assets (favicon, etc)
@@ -40,6 +43,7 @@ src/lib/
 ```
 
 ### FSD Rules
+
 - **Import Direction**: Lower layers can only import from layers below them, never above
   - `app` → `pages` → `widgets` → `features` → `entities` → `shared`
   - Example: `widgets` can import from `features`, `entities`, and `shared`, but NOT from `pages` or `app`
@@ -47,6 +51,7 @@ src/lib/
 - **Cross-imports**: Features and entities should not import from each other at the same layer
 
 ### Path Aliases
+
 - `@/*` maps to `src/lib/*`
 - Import examples:
   - `@/shared/ui/button` - shared UI components
@@ -59,6 +64,7 @@ src/lib/
 This project uses Svelte 5's new reactive primitives:
 
 ### Reactive State
+
 - `$state()` - Create reactive state
 - `$derived()` / `$derived.by()` - Computed values
 - `$effect()` / `$effect.pre()` - Side effects
@@ -66,6 +72,7 @@ This project uses Svelte 5's new reactive primitives:
 - `$bindable()` - Two-way binding for props
 
 ### Component Patterns
+
 - Use `{#snippet}` for reusable template fragments
 - Props are defined with `let { propName } = $props()`
 - Bindable props use `let { value = $bindable() } = $props()`
@@ -74,12 +81,14 @@ This project uses Svelte 5's new reactive primitives:
 ## Styling
 
 ### TailwindCSS Configuration
+
 - Uses Tailwind v4 with Vite plugin
 - Custom utilities via `tw-animate-css`
 - Forms and typography plugins enabled
 - Base styles in `src/app.css`
 
 ### Code Style (Prettier)
+
 - Tabs for indentation
 - Single quotes
 - No trailing commas
@@ -87,6 +96,7 @@ This project uses Svelte 5's new reactive primitives:
 - Plugins: prettier-plugin-svelte, prettier-plugin-tailwindcss
 
 ### UI Components
+
 - Based on shadcn-svelte (bits-ui under the hood)
 - Components located in `src/lib/shared/ui/`
 - Uses `clsx` and `tailwind-merge` via `cn()` utility for class composition
@@ -95,21 +105,25 @@ This project uses Svelte 5's new reactive primitives:
 ## Key Patterns
 
 ### Navigation
+
 - Routes defined in `src/lib/entities/nav-bar/routes.ts` as `NavBarItem[]`
 - Navigation bar (`NavBar` widget) receives items and manages active state
 - Page title binding through `pageTitle` prop synchronized with layout
 
 ### Icons
+
 - Uses `@lucide/svelte` for icons
 - Icon type defined in `src/lib/shared/types/icon.ts`
 - Icons imported from `@lucide/svelte/icons/*`
 
 ### Date Handling
+
 - Uses `@internationalized/date` library
 - `DateValue` type for date values
 - `getLocalTimeZone()` and `today()` for current date/timezone
 
 ### Routing
+
 - SvelteKit file-based routing in `src/routes/`
 - `+page.svelte` for pages
 - `+layout.svelte` for shared layouts

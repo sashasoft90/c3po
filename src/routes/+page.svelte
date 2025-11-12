@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { HomePage } from '@/pages/home-page';
+  import { HomePage } from "@/pages/home-page";
 </script>
 
 <HomePage />

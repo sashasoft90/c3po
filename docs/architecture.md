@@ -50,19 +50,19 @@ C3PO построен на архитектурной методологии **F
 ```typescript
 // ✅ Правильно
 // widgets/nav-bar → features/login-avatar
-import { LoginAvatar } from '@/features/login-avatar';
+import { LoginAvatar } from "@/features/login-avatar";
 
 // ✅ Правильно
 // features/calendar → shared/ui/button
-import { Button } from '@/shared/ui/button';
+import { Button } from "@/shared/ui/button";
 
 // ❌ Неправильно
 // features/calendar → widgets/nav-bar
-import { NavBar } from '@/widgets/nav-bar'; // ОШИБКА!
+import { NavBar } from "@/widgets/nav-bar"; // ОШИБКА!
 
 // ❌ Неправильно
 // features/calendar → features/login-avatar
-import { LoginAvatar } from '@/features/login-avatar'; // ОШИБКА!
+import { LoginAvatar } from "@/features/login-avatar"; // ОШИБКА!
 ```
 
 ## Структура проекта
@@ -134,12 +134,14 @@ c3po/
 **Назначение:** Глобальная инициализация приложения, providers, global assets.
 
 **Содержит:**
+
 - `assets/` - favicon, logos
 
 **Примеры использования:**
+
 ```typescript
 // src/routes/+layout.svelte
-import favicon from '@/app/assets/favicon.svg';
+import favicon from "@/app/assets/favicon.svg";
 ```
 
 ### 2. `pages/` - Pages Layer
@@ -147,11 +149,13 @@ import favicon from '@/app/assets/favicon.svg';
 **Назначение:** Композиция страниц из widgets и features.
 
 **Правила:**
+
 - Один page = одна бизнес-страница
 - Используется в `src/routes/+page.svelte`
 - Содержит UI логику конкретной страницы
 
 **Структура:**
+
 ```
 pages/
 └── planner/
@@ -162,11 +166,12 @@ pages/
 ```
 
 **Пример:**
+
 ```svelte
 <!-- src/lib/pages/planner/ui/planner.svelte -->
 <script lang="ts">
-  import { Calendar } from '@/features/calendar';
-  import { Button } from '@/shared/ui/button';
+  import { Calendar } from "@/features/calendar";
+  import { Button } from "@/shared/ui/button";
   // Композиция features и shared UI
 </script>
 ```
@@ -176,18 +181,20 @@ pages/
 **Назначение:** Композитные UI блоки, составленные из features и entities.
 
 **Правила:**
+
 - Самодостаточные UI блоки
 - Могут использовать features и entities
 - Переиспользуемы между pages
 
 **Пример: NavBar widget**
+
 ```svelte
 <!-- src/lib/widgets/nav-bar/nav-bar.svelte -->
 <script lang="ts">
-  import { LoginAvatar } from '@/features/login-avatar';
-  import { ModeWatcherToggle } from '@/shared/ui/mode-watcher-toggle';
-  import * as NavigationMenu from '@/shared/ui/navigation-menu';
-  import type { NavBarItem } from '@/shared/ui/navigation-menu';
+  import { LoginAvatar } from "@/features/login-avatar";
+  import { ModeWatcherToggle } from "@/shared/ui/mode-watcher-toggle";
+  import * as NavigationMenu from "@/shared/ui/navigation-menu";
+  import type { NavBarItem } from "@/shared/ui/navigation-menu";
 
   let { navBarItems, pageTitle = $bindable() }: Props = $props();
 </script>
@@ -204,11 +211,13 @@ pages/
 **Назначение:** Бизнес-features - законченные пользовательские сценарии.
 
 **Правила:**
+
 - Одна feature = одна функциональность
 - Features НЕ импортируют друг друга
 - Используют entities и shared
 
 **Структура:**
+
 ```
 features/
 └── calendar/
@@ -219,12 +228,13 @@ features/
 ```
 
 **Пример: Calendar feature**
+
 ```svelte
 <!-- src/lib/features/calendar/ui/calendar.svelte -->
 <script lang="ts">
-  import Calendar from '@/shared/ui/calendar/calendar.svelte';
-  import * as Drawer from '@/shared/ui/drawer';
-  import { Button } from '@/shared/ui/button';
+  import Calendar from "@/shared/ui/calendar/calendar.svelte";
+  import * as Drawer from "@/shared/ui/drawer";
+  import { Button } from "@/shared/ui/button";
 
   let { value = $bindable() } = $props();
 
@@ -246,30 +256,32 @@ features/
 **Назначение:** Бизнес-сущности приложения (модели, types, конфигурация).
 
 **Правила:**
+
 - Описывают бизнес-логику
 - Не зависят друг от друга
 - Используют только shared
 
 **Пример: Navigation routes entity**
+
 ```typescript
 // src/lib/entities/nav-bar/routes.ts
-import HouseIcon from '@lucide/svelte/icons/house';
-import CalendarDays from '@lucide/svelte/icons/calendar-days';
-import type { NavBarItem } from '@/shared/ui/navigation-menu';
+import HouseIcon from "@lucide/svelte/icons/house";
+import CalendarDays from "@lucide/svelte/icons/calendar-days";
+import type { NavBarItem } from "@/shared/ui/navigation-menu";
 
 const navBarItems: NavBarItem[] = [
   {
-    title: 'Home',
-    href: '/',
+    title: "Home",
+    href: "/",
     icon: HouseIcon,
-    active: true
+    active: true,
   },
   {
-    title: 'Planner',
-    href: '/planner',
+    title: "Planner",
+    href: "/planner",
     icon: CalendarDays,
-    active: true
-  }
+    active: true,
+  },
 ];
 
 export default navBarItems;
@@ -280,12 +292,14 @@ export default navBarItems;
 **Назначение:** Переиспользуемый код без бизнес-логики.
 
 **Содержит:**
+
 - `ui/` - UI компоненты (Button, Calendar, Drawer, etc.)
 - `types/` - Общие TypeScript types
 - `utils.ts` - Утилиты (`cn`, helpers)
 - `config/` - Конфигурация
 
 **Правила:**
+
 - НЕ содержит бизнес-логику
 - Максимально переиспользуемый
 - Может использоваться любым слоем
@@ -298,11 +312,11 @@ export default navBarItems;
 
 ```typescript
 // ✅ Правильно - импорт через Public API
-import { Calendar } from '@/features/calendar';
-import { Button } from '@/shared/ui/button';
+import { Calendar } from "@/features/calendar";
+import { Button } from "@/shared/ui/button";
 
 // ❌ Неправильно - прямой импорт файла
-import Calendar from '@/features/calendar/ui/calendar.svelte';
+import Calendar from "@/features/calendar/ui/calendar.svelte";
 ```
 
 ### Cross-feature imports
@@ -312,7 +326,7 @@ Features **НЕ должны** импортировать друг друга:
 ```typescript
 // ❌ Неправильно
 // features/calendar → features/login-avatar
-import { LoginAvatar } from '@/features/login-avatar';
+import { LoginAvatar } from "@/features/login-avatar";
 ```
 
 **Решение:** Если нужны обе features - используйте их в widget или page:
@@ -320,8 +334,8 @@ import { LoginAvatar } from '@/features/login-avatar';
 ```svelte
 <!-- ✅ Правильно - в widget -->
 <script lang="ts">
-  import { Calendar } from '@/features/calendar';
-  import { LoginAvatar } from '@/features/login-avatar';
+  import { Calendar } from "@/features/calendar";
+  import { LoginAvatar } from "@/features/login-avatar";
 </script>
 ```
 
@@ -332,6 +346,7 @@ import { LoginAvatar } from '@/features/login-avatar';
 Проект использует новые **runes** Svelte 5:
 
 #### `$state` - Reactive state
+
 ```svelte
 <script lang="ts">
   let count = $state(0);
@@ -340,6 +355,7 @@ import { LoginAvatar } from '@/features/login-avatar';
 ```
 
 #### `$derived` - Computed values
+
 ```svelte
 <script lang="ts">
   let count = $state(0);
@@ -348,12 +364,13 @@ import { LoginAvatar } from '@/features/login-avatar';
   // С функцией для сложной логики
   let greeting = $derived.by(() => {
     if (user) return `Hello, ${user.name}`;
-    return 'Hello, Guest';
+    return "Hello, Guest";
   });
 </script>
 ```
 
 #### `$effect` - Side effects
+
 ```svelte
 <script lang="ts">
   let value = $state<DateValue>();
@@ -365,12 +382,13 @@ import { LoginAvatar } from '@/features/login-avatar';
 
   // Effect - запускается после DOM update
   $effect(() => {
-    console.log('Value changed:', value);
+    console.log("Value changed:", value);
   });
 </script>
 ```
 
 #### `$props` - Component props
+
 ```svelte
 <script lang="ts">
   interface Props {
@@ -425,7 +443,7 @@ Route files используют page components:
 ```svelte
 <!-- src/routes/planner/+page.svelte -->
 <script lang="ts">
-  import { Planner } from '@/pages/planner';
+  import { Planner } from "@/pages/planner";
 </script>
 
 <Planner />
@@ -436,8 +454,8 @@ Route files используют page components:
 ```svelte
 <!-- src/routes/+layout.svelte -->
 <script lang="ts">
-  import { NavBar } from '@/widgets/nav-bar';
-  import navBarItems from '@/entities/nav-bar';
+  import { NavBar } from "@/widgets/nav-bar";
+  import navBarItems from "@/entities/nav-bar";
 
   let { children } = $props();
   let pageTitle = $state<string | undefined>();
@@ -456,7 +474,7 @@ Route files используют page components:
 Используем utility classes:
 
 ```svelte
-<div class="flex flex-row gap-2 p-4 bg-sidebar">
+<div class="flex flex-row gap-2 bg-sidebar p-4">
   <Button variant="outline" size="icon">
     <Icon class="size-6" />
   </Button>
@@ -469,8 +487,8 @@ Route files используют page components:
 
 ```typescript
 // src/lib/shared/utils.ts
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -478,15 +496,14 @@ export function cn(...inputs: ClassValue[]) {
 ```
 
 **Использование:**
+
 ```svelte
 <script lang="ts">
-  import { cn } from '@/shared/utils';
+  import { cn } from "@/shared/utils";
   let { class: className } = $props();
 </script>
 
-<div class={cn('base-styles', isActive && 'active-styles', className)}>
-  ...
-</div>
+<div class={cn("base-styles", isActive && "active-styles", className)}>...</div>
 ```
 
 ## Полезные ссылки

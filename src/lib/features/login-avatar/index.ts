@@ -1,1 +1,1 @@
-export { default as LoginAvatar } from './ui/login-avatar.svelte';
+export { default as LoginAvatar } from "./ui/login-avatar.svelte";
