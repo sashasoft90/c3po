@@ -8,11 +8,9 @@
   import CalendarPlusIcon from "@lucide/svelte/icons/calendar-plus";
   import { cn } from "@/shared/utils";
 
-  let open = $state(false);
-  let value = $state<DateValue | undefined>();
-  const id = $props.id();
+  let { value = $bindable<DateValue | undefined>(), class: className, id } = $props();
 
-  let { class: className } = $props();
+  let open = $state(false);
 
   const triggerLabel = $derived.by(() => {
     if (value) return value.toDate(getLocalTimeZone()).toLocaleDateString();

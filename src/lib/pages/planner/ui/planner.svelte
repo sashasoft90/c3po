@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { Calender } from "@/features/calender";
+	import { CalendarNavigation } from "@/widgets/calendar-navigation";
 </script>
 
-<Calender />
+<div class="grid grid-cols-1">
+	<div class="flex flex-row gap-2">
+		<CalendarNavigation />
+	</div>
+</div>
