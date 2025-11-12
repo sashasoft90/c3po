@@ -2,8 +2,8 @@ import { defineConfig } from 'vitest/config';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { sveltekit } from '@sveltejs/kit/vite';
 
-export default defineConfig({
-	plugins: [sveltekit(), svelte({ hot: !process.env.VITEST })],
+export default defineConfig(({ mode }) => ({
+	plugins: mode === 'test' ? [svelte({ hot: false, compilerOptions: { dev: true } })] : [sveltekit()],
 	test: {
 		globals: true,
 		environment: 'jsdom',
@@ -19,5 +19,13 @@ export default defineConfig({
 			reportsDirectory: '.log/unit/coverage',
 			exclude: ['node_modules/', 'src/test/']
 		}
+	},
+	resolve: {
+		alias: {
+			$lib: '/src/lib',
+			'@': '/src/lib',
+			'svelte': 'svelte'
+		},
+		conditions: ['browser']
 	}
-});
+}));
