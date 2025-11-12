@@ -334,6 +334,8 @@ import { Calendar } from "@/features/calendar";
 
 ## Testing
 
+Подробную информацию о тестировании смотрите в [testing.md](./testing.md).
+
 ### Type Checking
 
 ```bash
@@ -353,6 +355,39 @@ pnpm lint
 # Автоматическое исправление
 pnpm format
 ```
+
+### Unit Tests (Vitest + Testing Library)
+
+```bash
+# Запуск unit тестов в watch mode
+pnpm test
+
+# Одноразовый запуск
+pnpm test:run
+
+# С coverage
+pnpm test:coverage
+
+# UI режим
+pnpm test:ui
+```
+
+**Примечание**: Unit тесты временно не работают из-за несовместимости @testing-library/svelte с Svelte 5.39+. Используйте E2E тесты.
+
+### E2E Tests (Playwright)
+
+```bash
+# Запуск E2E тестов
+pnpm test:e2e
+
+# UI режим
+pnpm test:e2e:ui
+
+# Debug режим
+pnpm test:e2e:debug
+```
+
+E2E тесты находятся в папке `tests/` и тестируют реальное поведение в браузере.
 
 ### Manual Testing
 
@@ -383,6 +418,15 @@ pnpm check              # Type checking
 pnpm check:watch        # Type checking (watch mode)
 pnpm lint               # Lint check
 pnpm format             # Format code
+
+# Testing
+pnpm test               # Unit tests (watch mode)
+pnpm test:run           # Unit tests (run once)
+pnpm test:coverage      # Unit tests with coverage
+pnpm test:ui            # Unit tests UI
+pnpm test:e2e           # E2E tests
+pnpm test:e2e:ui        # E2E tests UI
+pnpm test:e2e:debug     # E2E tests debug
 
 # Production
 pnpm build              # Build for production

@@ -15,12 +15,14 @@ pnpm dev
 ## 📦 Основные команды
 
 ```bash
-pnpm dev          # Development server
-pnpm build        # Production build
-pnpm preview      # Preview production build
-pnpm check        # Type checking
-pnpm lint         # Linting
-pnpm format       # Code formatting
+pnpm dev              # Development server
+pnpm build            # Production build
+pnpm preview          # Preview production build
+pnpm check            # Type checking
+pnpm lint             # Linting
+pnpm format           # Code formatting
+pnpm test             # Unit tests (watch mode)
+pnpm test:e2e         # E2E tests
 ```
 
 ## 🏗️ Tech Stack
@@ -30,6 +32,7 @@ pnpm format       # Code formatting
 - **Feature-Sliced Design** - Архитектурная методология
 - **TailwindCSS v4** - Styling
 - **shadcn-svelte** - UI components
+- **Vitest** + **Playwright** - Testing (unit + E2E)
 
 ## 📚 Документация
 
@@ -39,6 +42,7 @@ pnpm format       # Code formatting
 - [**Contributing**](./docs/contributing.md) - Правила разработки и workflow
 - [**Components**](./docs/components.md) - Документация переиспользуемых компонентов
 - [**Style Guide**](./docs/style-guide.md) - Code style и conventions
+- [**Testing**](./docs/testing.md) - Руководство по тестированию (unit + E2E)
 
 **Для Claude Code AI:** см. [CLAUDE.md](./CLAUDE.md)
 

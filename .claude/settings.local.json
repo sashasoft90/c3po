@@ -1,6 +1,13 @@
 {
   "permissions": {
-    "allow": ["Bash(cat:*)"],
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(mkdir:*)",
+      "Bash(pnpm check:*)",
+      "Bash(pnpm --version:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm test:run:*)"
+    ],
     "deny": [],
     "ask": []
   }
