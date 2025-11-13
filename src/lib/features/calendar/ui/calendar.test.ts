@@ -17,7 +17,7 @@ describe("Calendar Feature", () => {
   });
 
   it("should display provided date value", () => {
-    const testDate = today(getLocalTimeZone());
+    const testDate = today(getLocalTimeZone()).add({ days: 10 });
     const { container } = render(Calendar, {
       props: {
         value: testDate,
