@@ -6,7 +6,8 @@
       "Bash(pnpm check:*)",
       "Bash(pnpm --version:*)",
       "Bash(pnpm add:*)",
-      "Bash(pnpm test:run:*)"
+      "Bash(pnpm test:run:*)",
+      "Bash(pnpm test:e2e:*)"
     ],
     "deny": [],
     "ask": []
