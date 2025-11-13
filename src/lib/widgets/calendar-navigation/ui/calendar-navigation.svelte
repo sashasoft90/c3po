@@ -8,22 +8,21 @@
 
 	let { class: className, id = "calendar-navigation" } = $props();
 
-	let value = $state<DateValue | undefined>(today(getLocalTimeZone()));
+	// Cache timezone for performance
+	const tz = getLocalTimeZone();
+	let value = $state<DateValue | undefined>(today(tz));
 
+	// Optimized functions - ensure synchronous state updates
 	function previousDay() {
-		if (value) {
-			value = value.subtract({ days: 1 });
-		} else {
-			value = today(getLocalTimeZone()).subtract({ days: 1 });
-		}
+		// Always use current value, falling back to today
+		const current = value ?? today(tz);
+		value = current.subtract({ days: 1 });
 	}
 
 	function nextDay() {
-		if (value) {
-			value = value.add({ days: 1 });
-		} else {
-			value = today(getLocalTimeZone()).add({ days: 1 });
-		}
+		// Always use current value, falling back to today
+		const current = value ?? today(tz);
+		value = current.add({ days: 1 });
 	}
 </script>
 

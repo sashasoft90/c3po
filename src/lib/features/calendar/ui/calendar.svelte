@@ -12,10 +12,11 @@
 
   let open = $state(false);
 
-  const triggerLabel = $derived.by(() => {
-    if (value) return value.toDate(getLocalTimeZone()).toLocaleDateString();
-    return today(getLocalTimeZone()).toDate(getLocalTimeZone()).toLocaleDateString();
-  });
+  // Optimized derived - cache timezone and use simpler $derived
+  const tz = getLocalTimeZone();
+  const triggerLabel = $derived(
+    value ? value.toDate(tz).toLocaleDateString() : today(tz).toDate(tz).toLocaleDateString()
+  );
 </script>
 
 <div class={cn("flex flex-col gap-3", className)}>
