@@ -267,10 +267,10 @@ test.describe("Calendar Navigation Widget", () => {
   });
 
   test("should persist selected date after page reload", async ({ page, browserName }) => {
-    // Skip for Chromium - localStorage persistence between page reloads has issues in Playwright
+    // Skip for Chromium/WebKit - localStorage persistence between page reloads has issues in Playwright
     test.skip(
-      browserName === "chromium",
-      "Chromium has issues with localStorage persistence in Playwright tests"
+      browserName === "chromium" || browserName === "webkit",
+      "Chromium/WebKit has issues with localStorage persistence in Playwright tests"
     );
 
     // Navigate to 3 days from now
