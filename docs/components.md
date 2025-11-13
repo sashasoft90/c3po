@@ -588,9 +588,7 @@ interface LoginAvatarProps {
 <Button>I adapt to theme</Button>
 
 <!-- Или кастомная стилизация -->
-<div class="bg-white text-black dark:bg-black dark:text-white">
-  Content
-</div>
+<div class="bg-white text-black dark:bg-black dark:text-white">Content</div>
 ```
 
 ## Создание новых компонентов
@@ -637,12 +635,7 @@ src/lib/shared/ui/
 ```typescript
 import Root, { type MyComponentProps } from "./my-component.svelte";
 
-export {
-  Root,
-  Root as MyComponent,
-  type MyComponentProps,
-  type MyComponentProps as Props,
-};
+export { Root, Root as MyComponent, type MyComponentProps, type MyComponentProps as Props };
 ```
 
 ## Ресурсы

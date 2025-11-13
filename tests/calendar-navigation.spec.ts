@@ -68,7 +68,10 @@ test.describe("Calendar Navigation Widget", () => {
 
   test("should handle multiple clicks correctly", async ({ page, browserName }) => {
     // Skip for Chromium due to rapid click timing issues in Playwright
-    test.skip(browserName === "chromium", "Chromium has timing issues with rapid clicks in Playwright");
+    test.skip(
+      browserName === "chromium",
+      "Chromium has timing issues with rapid clicks in Playwright"
+    );
 
     const today = new Date();
     const nextButton = page.getByLabel("Next day");
@@ -86,7 +89,10 @@ test.describe("Calendar Navigation Widget", () => {
 
   test("should navigate backwards and forwards", async ({ page, browserName }) => {
     // Skip for Chromium due to rapid click timing issues in Playwright
-    test.skip(browserName === "chromium", "Chromium has timing issues with rapid clicks in Playwright");
+    test.skip(
+      browserName === "chromium",
+      "Chromium has timing issues with rapid clicks in Playwright"
+    );
 
     const today = new Date();
     const prevButton = page.getByLabel("Previous day");
@@ -121,7 +127,10 @@ test.describe("Calendar Navigation Widget", () => {
 
   test("should handle month boundaries correctly", async ({ page, browserName }) => {
     // Skip for Chromium due to rapid click timing issues in Playwright
-    test.skip(browserName === "chromium", "Chromium has timing issues with many rapid clicks in Playwright");
+    test.skip(
+      browserName === "chromium",
+      "Chromium has timing issues with many rapid clicks in Playwright"
+    );
 
     const prevButton = page.getByLabel("Previous day");
 
@@ -157,7 +166,9 @@ test.describe("Calendar Navigation Widget", () => {
     await page.waitForTimeout(300);
 
     // Try multiple selectors for drawer content (browser compatibility)
-    const drawerContent = page.locator('[data-slot="drawer-content"], [role="dialog"], [data-vaul-drawer]').first();
+    const drawerContent = page
+      .locator('[data-slot="drawer-content"], [role="dialog"], [data-vaul-drawer]')
+      .first();
     await expect(drawerContent).toBeVisible({ timeout: 5000 });
 
     // Wait for calendar grid to be visible anywhere on page
@@ -167,7 +178,10 @@ test.describe("Calendar Navigation Widget", () => {
 
   test("should synchronize with calendar picker selection", async ({ page, browserName }) => {
     // Skip for Chromium due to vaul-svelte Portal rendering issues in Playwright
-    test.skip(browserName === "chromium", "vaul-svelte drawer has Portal rendering issues in Playwright Chromium");
+    test.skip(
+      browserName === "chromium",
+      "vaul-svelte drawer has Portal rendering issues in Playwright Chromium"
+    );
 
     // Open calendar drawer
     const calendarTrigger = page.locator('[id$="-date"]').first();
@@ -177,7 +191,9 @@ test.describe("Calendar Navigation Widget", () => {
     await page.waitForTimeout(300);
 
     // Try multiple selectors for drawer content
-    const drawerContent = page.locator('[data-slot="drawer-content"], [role="dialog"], [data-vaul-drawer]').first();
+    const drawerContent = page
+      .locator('[data-slot="drawer-content"], [role="dialog"], [data-vaul-drawer]')
+      .first();
     await expect(drawerContent).toBeVisible({ timeout: 5000 });
 
     // Wait for calendar to be visible

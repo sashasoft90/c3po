@@ -60,14 +60,14 @@ function greet(name: string): string {
 ```typescript
 // Single quotes - неправильно
 const user = {
-	name: 'John',
-	age: 30,
-	city: 'New York'  // No trailing comma
-}
+  name: "John",
+  age: 30,
+  city: "New York", // No trailing comma
+};
 
 // No semicolon - неправильно
 function greet(name: string): string {
-	return `Hello, ${name}!`
+  return `Hello, ${name}!`;
 }
 ```
 

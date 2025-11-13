@@ -94,6 +94,7 @@ git commit -m "C3PO-1/AlSa: format a full project"
 ```
 
 **Рекомендации по описанию:**
+
 - Используйте глаголы в повелительном наклонении: "add", "fix", "update", "refactor"
 - Будьте конкретны и кратки
 - Описывайте ЧТО сделано, а не КАК
@@ -233,20 +234,17 @@ git push --force-with-lease origin feature/C3PO-1/description
 Проверяйте:
 
 1. **Архитектура**
-
    - Соблюдение FSD правил
    - Правильная иерархия слоёв
    - Public API exports через `index.ts`
 
 2. **Code Quality**
-
    - TypeScript типизация
    - Svelte 5 best practices
    - Нет дублирования кода
    - Понятные имена переменных/функций
 
 3. **Styling**
-
    - Использование TailwindCSS utilities
    - Консистентность с существующим UI
    - Responsive design
@@ -281,12 +279,12 @@ features/
 ```typescript
 // PascalCase для types/interfaces
 interface User {
-	name: string;
+  name: string;
 }
 
 type NavBarItem = {
-	title: string;
-	href: string;
+  title: string;
+  href: string;
 };
 
 // camelCase для переменных, функций
@@ -302,17 +300,17 @@ import { Calendar } from "@/features/calendar";
 
 ```svelte
 <script lang="ts">
-	// Props - camelCase
-	let { userName, isActive } = $props();
+  // Props - camelCase
+  let { userName, isActive } = $props();
 
-	// State - camelCase
-	let count = $state(0);
+  // State - camelCase
+  let count = $state(0);
 
-	// Derived - camelCase
-	let doubled = $derived(count * 2);
+  // Derived - camelCase
+  let doubled = $derived(count * 2);
 
-	// Functions - camelCase
-	function handleClick() {}
+  // Functions - camelCase
+  function handleClick() {}
 </script>
 ```
 
@@ -321,14 +319,14 @@ import { Calendar } from "@/features/calendar";
 ```svelte
 <!-- TailwindCSS utilities -->
 <div class="flex flex-col gap-4 rounded-lg bg-background p-4">
-	<!-- ... -->
+  <!-- ... -->
 </div>
 
 <!-- Custom classes (если нужны) - kebab-case -->
 <style>
-	.custom-wrapper {
-		/* ... */
-	}
+  .custom-wrapper {
+    /* ... */
+  }
 </style>
 ```
 
@@ -446,11 +444,11 @@ pnpm preview            # Preview production build
 
 ```json
 {
-	"editor.formatOnSave": true,
-	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"editor.codeActionsOnSave": {
-		"source.fixAll.eslint": true
-	}
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  }
 }
 ```
 

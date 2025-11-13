@@ -3,4 +3,4 @@ ignoredBuiltDependencies:
 
 onlyBuiltDependencies:
   - esbuild
-  - '@tailwindcss/oxide'
+  - "@tailwindcss/oxide"

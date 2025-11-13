@@ -55,6 +55,7 @@ pnpm exec playwright install
 - **Фреймворк**: Vitest + @testing-library/svelte
 
 #### Примеры тестовых файлов:
+
 - `src/lib/features/calendar/ui/calendar.test.ts` - тесты для Calendar feature
 - `src/lib/widgets/calendar-navigation/ui/calendar-navigation.test.ts` - тесты для CalendarNavigation widget
 
@@ -65,6 +66,7 @@ pnpm exec playwright install
 - **Фреймворк**: Playwright
 
 #### Примеры тестовых файлов:
+
 - `tests/calendar-navigation.spec.ts` - E2E тесты для навигации по календарю
 
 ## Запуск тестов
@@ -103,6 +105,7 @@ pnpm test:e2e:debug
 ### Тесты Calendar Feature
 
 `calendar.test.ts` включает тесты для:
+
 - ✅ Отрисовки с текущей датой по умолчанию
 - ✅ Отображения предоставленного значения даты
 - ✅ Открытия drawer по клику на trigger
@@ -112,6 +115,7 @@ pnpm test:e2e:debug
 ### Тесты Calendar Navigation Widget
 
 `calendar-navigation.test.ts` включает тесты для:
+
 - ✅ Отрисовки календаря с кнопками навигации влево/вправо
 - ✅ Отображения текущей даты по умолчанию
 - ✅ Навигации на предыдущий день (левая кнопка)
@@ -124,6 +128,7 @@ pnpm test:e2e:debug
 ### E2E тесты
 
 `calendar-navigation.spec.ts` включает тесты для:
+
 - ✅ Визуального присутствия кнопок навигации и календаря
 - ✅ Начального отображения текущей даты
 - ✅ Навигации на предыдущий/следующий день через клики
@@ -139,20 +144,20 @@ pnpm test:e2e:debug
 ### Пример Unit теста
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/svelte';
-import { userEvent } from '@testing-library/user-event';
-import MyComponent from './my-component.svelte';
+import { describe, it, expect } from "vitest";
+import { render, screen } from "@testing-library/svelte";
+import { userEvent } from "@testing-library/user-event";
+import MyComponent from "./my-component.svelte";
 
-describe('MyComponent', () => {
-  it('should render correctly', () => {
+describe("MyComponent", () => {
+  it("should render correctly", () => {
     render(MyComponent, {
       props: {
-        someProp: 'value'
-      }
+        someProp: "value",
+      },
     });
 
-    expect(screen.getByText('value')).toBeInTheDocument();
+    expect(screen.getByText("value")).toBeInTheDocument();
   });
 });
 ```
@@ -160,16 +165,16 @@ describe('MyComponent', () => {
 ### Пример E2E теста
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('My Feature', () => {
+test.describe("My Feature", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/my-page');
+    await page.goto("/my-page");
   });
 
-  test('should perform user action', async ({ page }) => {
-    await page.getByRole('button', { name: 'Click me' }).click();
-    await expect(page.getByText('Success')).toBeVisible();
+  test("should perform user action", async ({ page }) => {
+    await page.getByRole("button", { name: "Click me" }).click();
+    await expect(page.getByText("Success")).toBeVisible();
   });
 });
 ```
@@ -195,6 +200,7 @@ test.describe('My Feature', () => {
 ### Проблемы с Vitest
 
 Если тесты не запускаются, убедитесь что:
+
 1. Все зависимости установлены: `pnpm install`
 2. TypeScript типы корректны: `pnpm check`
 3. Конфигурация Vitest валидна: проверьте `vitest.config.ts`
@@ -202,6 +208,7 @@ test.describe('My Feature', () => {
 ### Проблемы с Playwright
 
 Если E2E тесты падают:
+
 1. Убедитесь что браузеры установлены: `pnpm exec playwright install`
 2. Проверьте что dev сервер запущен на правильном порту (5173)
 3. Увеличьте timeout если тесты нестабильные: добавьте `timeout: 60000` к тесту
