@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type DateValue, getLocalTimeZone, today, parseDate } from "@internationalized/date";
+  import { type DateValue, getLocalTimeZone, today } from "@internationalized/date";
   import { Calendar } from "@/features/calendar";
   import { Button } from "@/shared/ui/button";
   import { Skeleton } from "@/shared/ui/skeleton";
@@ -7,38 +7,15 @@
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import { cn } from "@/shared/utils";
 
-  let { class: className = "", id = "calendar-navigation" } = $props();
+  let {
+    value = $bindable<DateValue | undefined>(today(getLocalTimeZone())),
+    initialized = false,
+    class: className = "",
+    id = "calendar-navigation",
+  } = $props();
 
   // Cache timezone for performance
   const tz = getLocalTimeZone();
-  const STORAGE_KEY = "calendar-navigation-date";
-  const isBrowser = typeof window !== "undefined";
-
-  // Start with today as default (for SSR)
-  let value = $state<DateValue | undefined>(today(tz));
-  let initialized = $state(false);
-
-  // Load from localStorage before first render (client-side only)
-  $effect.pre(() => {
-    if (isBrowser && !initialized) {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          value = parseDate(saved);
-        } catch {
-          // If parsing fails, keep today
-        }
-      }
-      initialized = true;
-    }
-  });
-
-  // Save date to localStorage whenever it changes
-  $effect(() => {
-    if (isBrowser && value && initialized) {
-      localStorage.setItem(STORAGE_KEY, value.toString());
-    }
-  });
 
   // Optimized functions - ensure synchronous state updates
   function previousDay() {

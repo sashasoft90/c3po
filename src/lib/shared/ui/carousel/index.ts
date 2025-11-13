@@ -4,6 +4,8 @@ import Item from "./carousel-item.svelte";
 import Previous from "./carousel-previous.svelte";
 import Next from "./carousel-next.svelte";
 
+export type { CarouselAPI } from "./context.js";
+
 export {
   Root,
   Content,
