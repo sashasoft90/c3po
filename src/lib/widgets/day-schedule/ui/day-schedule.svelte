@@ -8,7 +8,8 @@
   let {
     selectedDate = $bindable<DateValue | undefined>(),
     initialized = false,
-    intervalMinutes = 15,
+    intervalMinutes = 30,
+    showIntermediateLabels = false,
     class: className = "",
   } = $props();
 
@@ -77,13 +78,14 @@
 
   // Generate time slots for the day
   const timeSlots = $derived.by(() => {
-    const slots: string[] = [];
+    const slots: Array<{ time: string; isHourStart: boolean }> = [];
     const totalMinutes = 24 * 60;
 
     for (let minutes = 0; minutes < totalMinutes; minutes += intervalMinutes) {
       const hours = Math.floor(minutes / 60);
       const mins = minutes % 60;
-      slots.push(`${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`);
+      const time = `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+      slots.push({ time, isHourStart: mins === 0 });
     }
 
     return slots;
@@ -114,7 +116,7 @@
 
       <!-- Time slots skeleton -->
       <div class="flex flex-col gap-1">
-        {#each Array(10) as _, i}
+        {#each Array(10) as _, i (i)}
           <div class="flex items-center gap-2 border-b border-border py-2">
             <Skeleton class="h-4 w-16" />
             <Skeleton class="h-12 flex-1" />
@@ -130,7 +132,7 @@
       opts={{ startIndex: centerIndex, axis: "x" }}
     >
       <Carousel.Content>
-        {#each days as day}
+        {#each days as day (day.toString())}
           <Carousel.Item>
             <div class="flex flex-col gap-4">
               <!-- Header with day of week -->
@@ -141,10 +143,33 @@
 
               <!-- Vertical scrollable time schedule -->
               <div class="flex flex-col gap-1 overflow-y-auto" style="height: calc(100vh - 250px);">
-                {#each timeSlots as timeSlot}
-                  <div class="flex items-center gap-2 border-b border-border py-2">
-                    <span class="w-16 text-sm font-medium">{timeSlot}</span>
-                    <div class="h-12 flex-1 rounded border border-dashed border-border/50"></div>
+                {#each timeSlots as { time, isHourStart } (time)}
+                  <div
+                    class={cn(
+                      "flex items-center gap-2 py-2",
+                      isHourStart ? "border-t-2 border-t-border" : ""
+                    )}
+                  >
+                    {#if isHourStart || showIntermediateLabels}
+                      <span
+                        class={cn(
+                          "w-16 text-sm",
+                          isHourStart ? "text-base font-bold" : "font-normal text-muted-foreground"
+                        )}
+                      >
+                        {time}
+                      </span>
+                    {:else}
+                      <span class="w-16"></span>
+                    {/if}
+                    <div
+                      class={cn(
+                        "h-6 flex-1 cursor-pointer rounded border border-dashed border-border/20 transition-colors",
+                        "hover:border-border/50 hover:bg-accent/20",
+                        "active:border-border/50 active:bg-accent/30",
+                        !isHourStart ? "border-t border-t-border/30" : ""
+                      )}
+                    ></div>
                   </div>
                 {/each}
               </div>
