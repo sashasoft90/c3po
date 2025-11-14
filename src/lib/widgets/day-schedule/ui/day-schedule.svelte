@@ -4,12 +4,14 @@
   import * as Carousel from "@/shared/ui/carousel";
   import { Skeleton } from "@/shared/ui/skeleton";
   import { cn } from "@/shared/utils";
+  import { defaultLocale } from "@/shared/config";
 
   let {
     selectedDate = $bindable<DateValue | undefined>(),
     initialized = false,
     intervalMinutes = 30,
     showIntermediateLabels = false,
+    locale = defaultLocale,
     class: className = "",
   } = $props();
 
@@ -93,25 +95,17 @@
 
   // Format day info
   function formatDayOfWeek(date: DateValue): string {
-    return date.toDate(tz).toLocaleDateString("ru-RU", { weekday: "long" });
-  }
-
-  function formatDate(date: DateValue): string {
-    return date.toDate(tz).toLocaleDateString("ru-RU", {
-      day: "numeric",
-      month: "long",
-    });
+    return date.toDate(tz).toLocaleDateString(locale, { weekday: "long" });
   }
 </script>
 
-<div class={cn("flex flex-col gap-4", className)}>
+<div class={cn("flex flex-col gap-4 select-none", className)}>
   {#if !initialized}
     <!-- Skeleton для виджета DaySchedule -->
     <div class="flex flex-col gap-4">
       <!-- Header skeleton -->
       <div class="flex flex-col items-center gap-1">
         <Skeleton class="h-8 w-40" />
-        <Skeleton class="h-4 w-32" />
       </div>
 
       <!-- Time slots skeleton -->
@@ -138,36 +132,35 @@
               <!-- Header with day of week -->
               <div class="flex flex-col items-center gap-1">
                 <h2 class="text-2xl font-semibold capitalize">{formatDayOfWeek(day)}</h2>
-                <p class="text-sm text-muted-foreground">{formatDate(day)}</p>
               </div>
 
               <!-- Vertical scrollable time schedule -->
-              <div class="flex flex-col gap-1 overflow-y-auto" style="height: calc(100vh - 250px);">
+              <div class="flex flex-col gap-0 overflow-y-auto" style="height: calc(100vh - 250px);">
                 {#each timeSlots as { time, isHourStart } (time)}
                   <div
                     class={cn(
-                      "flex items-center gap-2 py-2",
+                      "flex items-center gap-2",
                       isHourStart ? "border-t-2 border-t-border" : ""
                     )}
                   >
                     {#if isHourStart || showIntermediateLabels}
                       <span
                         class={cn(
-                          "w-16 text-sm",
+                          "w-12 text-sm",
                           isHourStart ? "text-base font-bold" : "font-normal text-muted-foreground"
                         )}
                       >
                         {time}
                       </span>
                     {:else}
-                      <span class="w-16"></span>
+                      <span class="w-12"></span>
                     {/if}
                     <div
                       class={cn(
-                        "h-6 flex-1 cursor-pointer rounded border border-dashed border-border/20 transition-colors",
+                        "h-8 flex-1 cursor-pointer rounded border-x border-dashed border-border/100 transition-colors",
                         "hover:border-border/50 hover:bg-accent/20",
                         "active:border-border/50 active:bg-accent/30",
-                        !isHourStart ? "border-t border-t-border/30" : ""
+                        !isHourStart ? "border-t border-t-border/100" : ""
                       )}
                     ></div>
                   </div>

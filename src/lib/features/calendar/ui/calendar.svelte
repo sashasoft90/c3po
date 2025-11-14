@@ -7,15 +7,23 @@
   // noinspection ES6UnusedImports
   import CalendarPlusIcon from "@lucide/svelte/icons/calendar-plus";
   import { cn } from "@/shared/utils";
+  import { defaultLocale } from "@/shared/config";
 
-  let { value = $bindable<DateValue | undefined>(), class: className, id } = $props();
+  let {
+    value = $bindable<DateValue | undefined>(),
+    locale = defaultLocale,
+    class: className,
+    id,
+  } = $props();
 
   let open = $state(false);
 
   // Optimized derived - cache timezone and use simpler $derived
   const tz = getLocalTimeZone();
   const triggerLabel = $derived(
-    value ? value.toDate(tz).toLocaleDateString() : today(tz).toDate(tz).toLocaleDateString()
+    value
+      ? value.toDate(tz).toLocaleDateString(locale)
+      : today(tz).toDate(tz).toLocaleDateString(locale)
   );
 </script>
 
@@ -38,6 +46,7 @@
       <Calendar
         type="single"
         bind:value
+        {locale}
         captionLayout="dropdown"
         onValueChange={(v) => {
           if (v) {
