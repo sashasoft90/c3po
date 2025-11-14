@@ -101,7 +101,7 @@
   }
 </script>
 
-<div class={cn("flex flex-col gap-4 select-none", className)}>
+<div class={cn("flex h-full flex-col gap-2 select-none", className)}>
   {#if !initialized}
     <!-- Skeleton для виджета DaySchedule -->
     <div class="flex flex-col gap-4">
@@ -123,21 +123,20 @@
   {:else}
     <!-- Day carousel (swipe left/right to change days) -->
     <Carousel.Root
-      class="w-full"
+      class="h-full w-full"
       setApi={onCarouselApiChange}
       opts={{ startIndex: centerIndex, axis: "x" }}
     >
-      <Carousel.Content>
+      <Carousel.Content class="h-full">
         {#each days as day (day.toString())}
-          <Carousel.Item>
-            <div class="flex flex-col gap-4 overflow-hidden" style="height: calc(100vh - 200px);">
+          <Carousel.Item class="flex h-full">
+            <div class="flex flex-1 shrink-0 flex-col gap-2 overflow-hidden">
               <!-- Header with day of week -->
-              <div class="flex shrink-0 flex-col items-center gap-1">
+              <div class="flex shrink-0 flex-col items-center gap-0">
                 <h2 class="text-2xl font-semibold capitalize">{formatDayOfWeek(day)}</h2>
               </div>
-
               <!-- Vertical scrollable time schedule -->
-              <ScrollArea class="h-0 flex-1">
+              <ScrollArea class="min-h-0 flex-1">
                 {#snippet children()}
                   <div class="flex flex-col gap-0">
                     {#each timeSlots as { time, isHourStart } (time)}

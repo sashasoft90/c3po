@@ -16,7 +16,7 @@
 
 <div
   data-slot="carousel-content"
-  class="overflow-hidden"
+  class={cn("overflow-hidden", emblaCtx.orientation === "horizontal" ? "h-full" : "w-full")}
   use:emblaCarouselSvelte={{
     options: {
       container: "[data-embla-container]",

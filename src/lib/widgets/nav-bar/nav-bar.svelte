@@ -14,9 +14,10 @@
   interface Props {
     navBarItems: NavBarItem[];
     pageTitle: string | undefined;
+    class?: string;
   }
 
-  let { navBarItems, pageTitle = $bindable() }: Props = $props();
+  let { navBarItems, pageTitle = $bindable(), class: className }: Props = $props();
 
   type ListItemProps = HTMLAttributes<HTMLAnchorElement> & {
     title: string;
@@ -61,7 +62,7 @@
 
 <ModeWatcher />
 
-<div class="flex w-full items-center gap-2 bg-sidebar">
+<div class={cn("flex w-full items-center gap-2 bg-sidebar", className)}>
   <NavigationMenu.Root>
     <NavigationMenu.List class="gap-2 sm:gap-2">
       {#each navBarItems as item, i (i)}

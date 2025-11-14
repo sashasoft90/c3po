@@ -35,10 +35,10 @@
   });
 </script>
 
-<div class="grid grid-cols-1 gap-2">
-  <div class="flex flex-row gap-2">
+<div class="flex h-full flex-col gap-2">
+  <div class="flex shrink-0 flex-row">
     <CalendarNavigation bind:value={selectedDate} {initialized} />
   </div>
 
-  <DaySchedule bind:selectedDate {initialized} />
+  <DaySchedule bind:selectedDate {initialized} class="min-h-0 flex-1" />
 </div>

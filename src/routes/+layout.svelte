@@ -17,9 +17,9 @@
   <title>C3PO{pageTitle ? " - " + pageTitle : ""}</title>
 </svelte:head>
 
-<div id="body-wrapper" class="flex min-h-screen flex-col">
-  <NavBar {navBarItems} bind:pageTitle></NavBar>
-  <div class="m-2">
+<div id="body-wrapper" class="flex h-screen flex-col overflow-hidden">
+  <NavBar {navBarItems} bind:pageTitle class="shrink-0"></NavBar>
+  <div class="m-2 mt-2 mb-2 flex min-h-0 flex-1 flex-col overflow-hidden">
     {@render children?.()}
   </div>
 </div>
