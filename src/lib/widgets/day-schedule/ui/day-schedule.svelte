@@ -1,8 +1,10 @@
 <script lang="ts">
   import { type DateValue, getLocalTimeZone, today } from "@internationalized/date";
   import type { CarouselAPI } from "@/shared/ui/carousel";
+  // noinspection ES6UnusedImports
   import * as Carousel from "@/shared/ui/carousel";
   import { Skeleton } from "@/shared/ui/skeleton";
+  import { ScrollArea } from "@/shared/ui/scroll-area";
   import { cn } from "@/shared/utils";
   import { defaultLocale } from "@/shared/config";
 
@@ -128,44 +130,50 @@
       <Carousel.Content>
         {#each days as day (day.toString())}
           <Carousel.Item>
-            <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-4 overflow-hidden" style="height: calc(100vh - 200px);">
               <!-- Header with day of week -->
-              <div class="flex flex-col items-center gap-1">
+              <div class="flex shrink-0 flex-col items-center gap-1">
                 <h2 class="text-2xl font-semibold capitalize">{formatDayOfWeek(day)}</h2>
               </div>
 
               <!-- Vertical scrollable time schedule -->
-              <div class="flex flex-col gap-0 overflow-y-auto" style="height: calc(100vh - 250px);">
-                {#each timeSlots as { time, isHourStart } (time)}
-                  <div
-                    class={cn(
-                      "flex items-center gap-2",
-                      isHourStart ? "border-t-2 border-t-border" : ""
-                    )}
-                  >
-                    {#if isHourStart || showIntermediateLabels}
-                      <span
+              <ScrollArea class="h-0 flex-1">
+                {#snippet children()}
+                  <div class="flex flex-col gap-0">
+                    {#each timeSlots as { time, isHourStart } (time)}
+                      <div
                         class={cn(
-                          "w-12 text-sm",
-                          isHourStart ? "text-base font-bold" : "font-normal text-muted-foreground"
+                          "flex items-center gap-2",
+                          isHourStart ? "border-t-2 border-t-border" : ""
                         )}
                       >
-                        {time}
-                      </span>
-                    {:else}
-                      <span class="w-12"></span>
-                    {/if}
-                    <div
-                      class={cn(
-                        "h-8 flex-1 cursor-pointer rounded border-x border-dashed border-border/100 transition-colors",
-                        "hover:border-border/50 hover:bg-accent/20",
-                        "active:border-border/50 active:bg-accent/30",
-                        !isHourStart ? "border-t border-t-border/100" : ""
-                      )}
-                    ></div>
+                        {#if isHourStart || showIntermediateLabels}
+                          <span
+                            class={cn(
+                              "w-12 text-sm",
+                              isHourStart
+                                ? "text-base font-bold"
+                                : "font-normal text-muted-foreground"
+                            )}
+                          >
+                            {time}
+                          </span>
+                        {:else}
+                          <span class="w-12"></span>
+                        {/if}
+                        <div
+                          class={cn(
+                            "h-8 flex-1 cursor-pointer rounded border-x border-dashed border-border/100 transition-colors",
+                            "hover:border-border/50 hover:bg-accent/20",
+                            "active:border-border/50 active:bg-accent/30",
+                            !isHourStart ? "border-t border-t-border/100" : ""
+                          )}
+                        ></div>
+                      </div>
+                    {/each}
                   </div>
-                {/each}
-              </div>
+                {/snippet}
+              </ScrollArea>
             </div>
           </Carousel.Item>
         {/each}
