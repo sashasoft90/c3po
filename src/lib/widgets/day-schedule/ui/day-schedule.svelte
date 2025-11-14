@@ -21,6 +21,10 @@
   // Cache timezone
   const tz = getLocalTimeZone();
 
+  // localStorage for scroll position persistence
+  const SCROLL_STORAGE_KEY = "day-schedule-scroll-position";
+  const isBrowser = typeof window !== "undefined";
+
   // Generate days around selected date (for carousel navigation)
   const daysRange = 3; // Show 3 days before and after
   const days = $derived.by(() => {
@@ -47,6 +51,26 @@
   let savedScrollTop = $state(0);
   // Initialize array with correct length (7 days: -3, -2, -1, 0, +1, +2, +3)
   let scrollViewportRefs = $state<(HTMLElement | null)[]>(Array(7).fill(null));
+
+  // Load scroll position from localStorage before first render (client-side only)
+  $effect.pre(() => {
+    if (isBrowser && initialized) {
+      const saved = localStorage.getItem(SCROLL_STORAGE_KEY);
+      if (saved) {
+        const scrollPos = parseInt(saved, 10);
+        if (!isNaN(scrollPos)) {
+          savedScrollTop = scrollPos;
+        }
+      }
+    }
+  });
+
+  // Save scroll position to localStorage whenever it changes
+  $effect(() => {
+    if (isBrowser && initialized && savedScrollTop > 0) {
+      localStorage.setItem(SCROLL_STORAGE_KEY, savedScrollTop.toString());
+    }
+  });
 
   // Handle carousel API initialization
   function onCarouselApiChange(api: CarouselAPI | undefined) {
@@ -86,6 +110,18 @@
     } else if (index !== -1 && scrollViewportRefs[index]) {
       // Restore scroll position when returning to a day
       scrollViewportRefs[index]!.scrollTop = savedScrollTop;
+    }
+  });
+
+  // Restore saved scroll position to current viewport after initialization
+  $effect(() => {
+    if (!carouselApi || !initialized) return;
+
+    const currentIndex = carouselApi.selectedScrollSnap();
+    const currentViewport = scrollViewportRefs[currentIndex];
+
+    if (currentViewport && savedScrollTop > 0) {
+      currentViewport.scrollTop = savedScrollTop;
     }
   });
 
