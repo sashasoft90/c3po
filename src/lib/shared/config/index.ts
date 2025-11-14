@@ -1,1 +1,1 @@
-export * from "./locale.js";
+export * from "./locale";

@@ -7,6 +7,7 @@
   import { ScrollArea } from "@/shared/ui/scroll-area";
   import { cn } from "@/shared/utils";
   import { defaultLocale } from "@/shared/config";
+  import { debounce } from "@/shared/event-functions";
 
   let {
     selectedDate = $bindable<DateValue | undefined>(),
@@ -41,6 +42,11 @@
 
   // Track if we're programmatically scrolling (to avoid loops)
   let isProgrammaticScroll = $state(false);
+
+  // Synchronized scroll position across all days
+  let savedScrollTop = $state(0);
+  // Initialize array with correct length (7 days: -3, -2, -1, 0, +1, +2, +3)
+  let scrollViewportRefs = $state<(HTMLElement | null)[]>(Array(7).fill(null));
 
   // Handle carousel API initialization
   function onCarouselApiChange(api: CarouselAPI | undefined) {
@@ -77,7 +83,49 @@
       setTimeout(() => {
         isProgrammaticScroll = false;
       }, 100);
+    } else if (index !== -1 && scrollViewportRefs[index]) {
+      // Restore scroll position when returning to a day
+      scrollViewportRefs[index]!.scrollTop = savedScrollTop;
     }
+  });
+
+  // Track scroll position on the currently active viewport
+  $effect(() => {
+    if (!carouselApi) return;
+
+    const currentIndex = carouselApi.selectedScrollSnap();
+    const currentViewport = scrollViewportRefs[currentIndex];
+
+    if (!currentViewport) return;
+
+    // Update saved position immediately
+    const handleScroll = () => {
+      if (currentViewport) {
+        savedScrollTop = currentViewport.scrollTop;
+      }
+    };
+
+    // Sync all viewports with debounce to avoid performance issues
+    const syncAllViewports = debounce(() => {
+      // Use requestAnimationFrame to batch DOM updates and sync with browser refresh
+      requestAnimationFrame(() => {
+        for (let i = 0; i < scrollViewportRefs.length; i++) {
+          const scrollArea = scrollViewportRefs[i];
+          // Don't update current viewport to avoid scroll loop
+          if (scrollArea && i !== currentIndex) {
+            scrollArea.scrollTop = savedScrollTop;
+          }
+        }
+      });
+    }, 150);
+
+    currentViewport.addEventListener("scroll", handleScroll, { passive: true });
+    currentViewport.addEventListener("scroll", syncAllViewports, { passive: true });
+
+    return () => {
+      currentViewport?.removeEventListener("scroll", handleScroll);
+      currentViewport?.removeEventListener("scroll", syncAllViewports);
+    };
   });
 
   // Generate time slots for the day
@@ -128,7 +176,7 @@
       opts={{ startIndex: centerIndex, axis: "x" }}
     >
       <Carousel.Content class="h-full">
-        {#each days as day (day.toString())}
+        {#each days as day, dayIndex (day.toString())}
           <Carousel.Item class="flex h-full">
             <div class="flex flex-1 shrink-0 flex-col gap-2 overflow-hidden">
               <!-- Header with day of week -->
@@ -136,7 +184,7 @@
                 <h2 class="text-2xl font-semibold capitalize">{formatDayOfWeek(day)}</h2>
               </div>
               <!-- Vertical scrollable time schedule -->
-              <ScrollArea class="min-h-0 flex-1">
+              <ScrollArea class="min-h-0 flex-1" bind:viewportRef={scrollViewportRefs[dayIndex]}>
                 {#snippet children()}
                   <div class="flex flex-col gap-0">
                     {#each timeSlots as { time, isHourStart } (time)}
