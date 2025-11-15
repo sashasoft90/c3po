@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { render } from "@testing-library/svelte";
+import { render, waitFor } from "@testing-library/svelte";
 import { today, getLocalTimeZone } from "@internationalized/date";
 import Calendar from "./calendar.svelte";
 
 describe("Calendar Feature", () => {
-  it("should render with today's date by default", () => {
+  it("should render with today's date by default", async () => {
     const { container } = render(Calendar, {
       props: {
         id: "test-calendar",
@@ -12,11 +12,15 @@ describe("Calendar Feature", () => {
       },
     });
 
-    const todayDate = today(getLocalTimeZone()).toDate(getLocalTimeZone()).toLocaleDateString();
-    expect(container.textContent).toContain(todayDate);
+    await waitFor(() => {
+      const todayDate = today(getLocalTimeZone())
+        .toDate(getLocalTimeZone())
+        .toLocaleDateString("en-US");
+      expect(container.textContent).toContain(todayDate);
+    });
   });
 
-  it("should display provided date value", () => {
+  it("should display provided date value", async () => {
     const testDate = today(getLocalTimeZone()).add({ days: 10 });
     const { container } = render(Calendar, {
       props: {
@@ -26,8 +30,10 @@ describe("Calendar Feature", () => {
       },
     });
 
-    const formattedDate = testDate.toDate(getLocalTimeZone()).toLocaleDateString();
-    expect(container.textContent).toContain(formattedDate);
+    await waitFor(() => {
+      const formattedDate = testDate.toDate(getLocalTimeZone()).toLocaleDateString("en-US");
+      expect(container.textContent).toContain(formattedDate);
+    });
   });
 
   it("should render with correct id", () => {
