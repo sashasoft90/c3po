@@ -8,6 +8,10 @@
   import { cn } from "@/shared/utils";
   import { defaultLocale } from "@/shared/config";
   import { debounce } from "@/shared/event-functions";
+  import { appointmentStore } from "@/entities/appointment";
+  import { fetchAppointments } from "@/shared/api/appointments";
+  import AppointmentBlock from "./appointment-block.svelte";
+  import { AppointmentCreateDialog } from "@/features/appointment";
 
   let {
     selectedDate = $bindable<DateValue | undefined>(),
@@ -174,6 +178,133 @@
   function formatDayOfWeek(date: DateValue): string {
     return date.toDate(tz).toLocaleDateString(locale, { weekday: "long" });
   }
+
+  // Load appointments on initialization
+  $effect(() => {
+    if (initialized && isBrowser) {
+      fetchAppointments().then((response) => {
+        if (response.data) {
+          appointmentStore.setAll(response.data);
+        }
+      });
+    }
+  });
+
+  // Get appointments for a specific day
+  function getAppointmentsForDay(day: DateValue) {
+    return appointmentStore.getByDate(day);
+  }
+
+  // Calculate slot height in pixels (needed for appointment positioning)
+  const SLOT_HEIGHT_PX = 32; // matches h-8 class (8 * 4px = 32px)
+
+  // Drag and drop state
+  let draggedAppointmentId = $state<string | null>(null);
+  let dropTargetSlot = $state<{ day: DateValue; time: string } | null>(null);
+
+  function handleAppointmentDragStart(appointmentId: string) {
+    draggedAppointmentId = appointmentId;
+  }
+
+  function handleAppointmentDragEnd() {
+    draggedAppointmentId = null;
+    dropTargetSlot = null;
+  }
+
+  function handleSlotDragOver(event: DragEvent, day: DateValue, time: string) {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = "move";
+    }
+    dropTargetSlot = { day, time };
+  }
+
+  function handleSlotDragLeave() {
+    dropTargetSlot = null;
+  }
+
+  async function handleSlotDrop(event: DragEvent, day: DateValue, time: string) {
+    event.preventDefault();
+    dropTargetSlot = null;
+
+    if (!draggedAppointmentId) return;
+
+    try {
+      const data = event.dataTransfer?.getData("application/json");
+      if (!data) return;
+
+      const { appointmentId } = JSON.parse(data);
+
+      // Update appointment with new date and time
+      const { updateAppointment } = await import("@/shared/api/appointments");
+      const { roundTimeToInterval } = await import("@/shared/types");
+
+      const roundedTime = roundTimeToInterval(time, intervalMinutes);
+
+      await updateAppointment(appointmentId, {
+        date: day,
+        startTime: roundedTime,
+      });
+
+      // Refresh appointments
+      const response = await fetchAppointments();
+      if (response.data) {
+        appointmentStore.setAll(response.data);
+      }
+    } catch (error) {
+      console.error("Failed to update appointment:", error);
+    }
+  }
+
+  function isDropTarget(day: DateValue, time: string): boolean {
+    if (!dropTargetSlot) return false;
+    return dropTargetSlot.day.compare(day) === 0 && dropTargetSlot.time === time;
+  }
+
+  // Appointment creation
+  let createDialogOpen = $state(false);
+  let createDialogDate = $state<DateValue>(today(tz));
+  let createDialogTime = $state("09:00");
+  let longPressTimer: number | null = null;
+  const LONG_PRESS_DURATION = 300; // milliseconds
+
+  function handleSlotClick(day: DateValue, time: string) {
+    if (draggedAppointmentId) return; // Don't open dialog during drag
+
+    createDialogDate = day;
+    createDialogTime = time;
+    createDialogOpen = true;
+  }
+
+  function handleSlotMouseDown(day: DateValue, time: string) {
+    // Start long press timer for mobile/touch devices
+    longPressTimer = window.setTimeout(() => {
+      handleSlotClick(day, time);
+    }, LONG_PRESS_DURATION);
+  }
+
+  function handleSlotMouseUp() {
+    // Cancel long press if mouse/touch is released
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  }
+
+  async function handleAppointmentCreated() {
+    // Refresh appointments after creation
+    const response = await fetchAppointments();
+    if (response.data) {
+      appointmentStore.setAll(response.data);
+    }
+  }
+
+  function handleSlotKeydown(event: KeyboardEvent, day: DateValue, time: string) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleSlotClick(day, time);
+    }
+  }
 </script>
 
 <div class={cn("flex h-full flex-col gap-2 select-none", className)}>
@@ -213,38 +344,72 @@
               <!-- Vertical scrollable time schedule -->
               <ScrollArea class="min-h-0 flex-1" bind:viewportRef={scrollViewportRefs[dayIndex]}>
                 {#snippet children()}
-                  <div class="flex flex-col gap-0">
-                    {#each timeSlots as { time, isHourStart } (time)}
-                      <div
-                        class={cn(
-                          "flex items-center gap-2",
-                          isHourStart ? "border-t-2 border-t-border" : ""
-                        )}
-                      >
-                        {#if isHourStart || showIntermediateLabels}
-                          <span
-                            class={cn(
-                              "w-12 text-sm",
-                              isHourStart
-                                ? "text-base font-bold"
-                                : "font-normal text-muted-foreground"
-                            )}
-                          >
-                            {time}
-                          </span>
-                        {:else}
-                          <span class="w-12"></span>
-                        {/if}
+                  <div class="relative">
+                    <div class="flex flex-col gap-0">
+                      {#each timeSlots as { time, isHourStart } (time)}
                         <div
                           class={cn(
-                            "h-8 flex-1 cursor-pointer rounded border-x border-dashed border-border/100 transition-colors",
-                            "hover:border-border/50 hover:bg-accent/20",
-                            "active:border-border/50 active:bg-accent/30",
-                            !isHourStart ? "border-t border-t-border/100" : ""
+                            "flex items-center gap-2",
+                            isHourStart ? "border-t-2 border-t-border" : ""
                           )}
-                        ></div>
+                        >
+                          {#if isHourStart || showIntermediateLabels}
+                            <span
+                              class={cn(
+                                "w-12 text-sm",
+                                isHourStart
+                                  ? "text-base font-bold"
+                                  : "font-normal text-muted-foreground"
+                              )}
+                            >
+                              {time}
+                            </span>
+                          {:else}
+                            <span class="w-12"></span>
+                          {/if}
+                          <div
+                            role="button"
+                            tabindex="0"
+                            onclick={() => handleSlotClick(day, time)}
+                            onkeydown={(e) => handleSlotKeydown(e, day, time)}
+                            onmousedown={() => handleSlotMouseDown(day, time)}
+                            onmouseup={handleSlotMouseUp}
+                            onmouseleave={handleSlotMouseUp}
+                            ontouchstart={() => handleSlotMouseDown(day, time)}
+                            ontouchend={handleSlotMouseUp}
+                            ontouchcancel={handleSlotMouseUp}
+                            ondragover={(e) => handleSlotDragOver(e, day, time)}
+                            ondragleave={handleSlotDragLeave}
+                            ondrop={(e) => handleSlotDrop(e, day, time)}
+                            class={cn(
+                              "h-8 flex-1 cursor-pointer rounded border-x border-dashed border-border/100 transition-colors",
+                              "hover:border-border/50 hover:bg-accent/20",
+                              "active:border-border/50 active:bg-accent/30",
+                              !isHourStart ? "border-t border-t-border/100" : "",
+                              isDropTarget(day, time) && "border-primary bg-primary/20"
+                            )}
+                          ></div>
+                        </div>
+                      {/each}
+                    </div>
+
+                    <!-- Appointment blocks overlay (absolute positioning) -->
+                    <div
+                      class="pointer-events-none absolute top-0 right-0 left-16"
+                      style="height: {timeSlots.length * SLOT_HEIGHT_PX}px"
+                    >
+                      <div class="pointer-events-auto relative h-full">
+                        {#each getAppointmentsForDay(day) as appointment (appointment.id)}
+                          <AppointmentBlock
+                            {appointment}
+                            slotHeightPx={SLOT_HEIGHT_PX}
+                            slotIntervalMinutes={intervalMinutes}
+                            onDragStart={handleAppointmentDragStart}
+                            onDragEnd={handleAppointmentDragEnd}
+                          />
+                        {/each}
                       </div>
-                    {/each}
+                    </div>
                   </div>
                 {/snippet}
               </ScrollArea>
@@ -253,5 +418,13 @@
         {/each}
       </Carousel.Content>
     </Carousel.Root>
+
+    <!-- Appointment creation dialog -->
+    <AppointmentCreateDialog
+      bind:open={createDialogOpen}
+      date={createDialogDate}
+      startTime={createDialogTime}
+      onCreated={handleAppointmentCreated}
+    />
   {/if}
 </div>
