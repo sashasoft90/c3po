@@ -44,9 +44,6 @@
   // Carousel API for syncing
   let carouselApi = $state<CarouselAPI | undefined>();
 
-  // Track if we're programmatically scrolling (to avoid loops)
-  let isProgrammaticScroll = $state(false);
-
   // Synchronized scroll position across all days
   let savedScrollTop = $state(0);
   // Initialize array with correct length (7 days: -3, -2, -1, 0, +1, +2, +3)
@@ -79,10 +76,10 @@
 
   // When carousel position changes, update selectedDate
   $effect(() => {
-    if (!carouselApi || isProgrammaticScroll) return;
+    if (!carouselApi) return;
 
     const handleSelect = () => {
-      if (!carouselApi || isProgrammaticScroll) return;
+      if (!carouselApi) return;
       const index = carouselApi.selectedScrollSnap();
       selectedDate = days[index];
     };
@@ -94,22 +91,16 @@
     };
   });
 
-  // When selectedDate changes externally, update carousel position
+  // When selectedDate changes externally (e.g., from calendar), update carousel position
   $effect(() => {
     if (!carouselApi || !selectedDate) return;
 
-    // Find the index of the selected date
+    // Find the index of the selected date in the days array
     const index = days.findIndex((day) => day.compare(selectedDate) === 0);
 
+    // Only update the carousel if the index changed
     if (index !== -1 && index !== carouselApi.selectedScrollSnap()) {
-      isProgrammaticScroll = true;
       carouselApi.scrollTo(index);
-      setTimeout(() => {
-        isProgrammaticScroll = false;
-      }, 100);
-    } else if (index !== -1 && scrollViewportRefs[index]) {
-      // Restore scroll position when returning to a day
-      scrollViewportRefs[index]!.scrollTop = savedScrollTop;
     }
   });
 
@@ -209,7 +200,7 @@
     <Carousel.Root
       class="h-full w-full"
       setApi={onCarouselApiChange}
-      opts={{ startIndex: centerIndex, axis: "x" }}
+      opts={{ startIndex: centerIndex, axis: "x", loop: true }}
     >
       <Carousel.Content class="h-full">
         {#each days as day, dayIndex (day.toString())}
