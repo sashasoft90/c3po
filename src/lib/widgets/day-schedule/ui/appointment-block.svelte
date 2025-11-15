@@ -108,7 +108,7 @@
   ondragstart={handleDragStart}
   ondragend={handleDragEnd}
   class={cn(
-    "group absolute right-0 left-0 z-10 overflow-hidden rounded border-2 border-l-4 p-2 shadow-md transition-all hover:shadow-lg",
+    "group absolute right-0 left-0 z-10 overflow-hidden rounded border-2 border-l-4 px-2 py-1 shadow-md transition-all hover:shadow-lg",
     serviceConfig.color,
     "border-opacity-50 bg-opacity-90 border-l-white/80 text-white",
     isDragging && "scale-95 opacity-50",
@@ -118,17 +118,22 @@
   )}
   style:top="{topPx}px"
   style:height="{heightPx}px"
+  style:min-height="48px"
   role="button"
   tabindex="0"
 >
-	<div class="flex h-full flex-col gap-1 p-0.5">
-		<div class="truncate text-sm font-bold">{serviceConfig.displayName}</div>
-		<div class="truncate text-xs text-white/90">{clientNames}</div>
-		<div class="text-xs text-white/80">{appointment.startTime} - {endTime}</div>
-		{#if appointment.notes}
-			<div class="truncate text-xs italic text-white/70">{appointment.notes}</div>
-		{/if}
-	</div>
+  <div class="flex h-full flex-col justify-center gap-0.5">
+    <div class="truncate text-sm leading-tight font-semibold">{serviceConfig.displayName}</div>
+    <div class="truncate text-xs leading-tight text-white/90">{clientNames}</div>
+    <div class="text-[10px] leading-tight text-white/70">
+      {appointment.startTime} - {endTime}
+    </div>
+    {#if appointment.notes && heightPx > 80}
+      <div class="truncate text-[10px] leading-tight text-white/60 italic">
+        {appointment.notes}
+      </div>
+    {/if}
+  </div>
 
   <!-- Resize handle -->
   <div

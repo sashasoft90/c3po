@@ -395,7 +395,7 @@
 
                     <!-- Appointment blocks overlay (absolute positioning) -->
                     <div
-                      class="pointer-events-none absolute top-0 right-0 left-16"
+                      class="pointer-events-none absolute top-0 right-2 left-16"
                       style="height: {timeSlots.length * SLOT_HEIGHT_PX}px"
                     >
                       <div class="pointer-events-auto relative h-full">
