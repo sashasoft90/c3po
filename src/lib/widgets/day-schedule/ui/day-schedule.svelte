@@ -201,14 +201,22 @@
   // Drag and drop state
   let draggedAppointmentId = $state<string | null>(null);
   let dropTargetSlot = $state<{ day: DateValue; time: string } | null>(null);
+  let dragPreviewSlot = $state<{ day: DateValue; time: string } | null>(null);
 
   function handleAppointmentDragStart(appointmentId: string) {
     draggedAppointmentId = appointmentId;
   }
 
-  function handleAppointmentDragEnd() {
+  async function handleAppointmentDragEnd() {
     draggedAppointmentId = null;
     dropTargetSlot = null;
+    dragPreviewSlot = null;
+
+    // Refresh appointments to show updates
+    const response = await fetchAppointments();
+    if (response.data) {
+      appointmentStore.setAll(response.data);
+    }
   }
 
   function handleSlotDragOver(event: DragEvent, day: DateValue, time: string) {
@@ -216,11 +224,23 @@
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = "move";
     }
-    dropTargetSlot = { day, time };
+
+    // Round time to 15-minute intervals
+    const { roundTimeToInterval } = require("@/shared/types");
+    const roundedTime = roundTimeToInterval(time, 15);
+
+    dropTargetSlot = { day, time: roundedTime };
+    dragPreviewSlot = { day, time: roundedTime };
   }
 
   function handleSlotDragLeave() {
-    dropTargetSlot = null;
+    // Don't clear immediately to avoid flicker
+    setTimeout(() => {
+      if (!draggedAppointmentId) {
+        dropTargetSlot = null;
+        dragPreviewSlot = null;
+      }
+    }, 50);
   }
 
   async function handleSlotDrop(event: DragEvent, day: DateValue, time: string) {
@@ -239,7 +259,8 @@
       const { updateAppointment } = await import("@/shared/api/appointments");
       const { roundTimeToInterval } = await import("@/shared/types");
 
-      const roundedTime = roundTimeToInterval(time, intervalMinutes);
+      // Round to 15-minute intervals
+      const roundedTime = roundTimeToInterval(time, 15);
 
       await updateAppointment(appointmentId, {
         date: day,
@@ -395,20 +416,18 @@
 
                     <!-- Appointment blocks overlay (absolute positioning) -->
                     <div
-                      class="pointer-events-none absolute top-0 right-2 left-16"
-                      style="height: {timeSlots.length * SLOT_HEIGHT_PX}px"
+                      class="absolute top-0 right-2 left-16"
+                      style="height: {timeSlots.length * SLOT_HEIGHT_PX}px; pointer-events: none;"
                     >
-                      <div class="pointer-events-auto relative h-full">
-                        {#each getAppointmentsForDay(day) as appointment (appointment.id)}
-                          <AppointmentBlock
-                            {appointment}
-                            slotHeightPx={SLOT_HEIGHT_PX}
-                            slotIntervalMinutes={intervalMinutes}
-                            onDragStart={handleAppointmentDragStart}
-                            onDragEnd={handleAppointmentDragEnd}
-                          />
-                        {/each}
-                      </div>
+                      {#each getAppointmentsForDay(day) as appointment (appointment.id)}
+                        <AppointmentBlock
+                          {appointment}
+                          slotHeightPx={SLOT_HEIGHT_PX}
+                          slotIntervalMinutes={intervalMinutes}
+                          onDragStart={handleAppointmentDragStart}
+                          onDragEnd={handleAppointmentDragEnd}
+                        />
+                      {/each}
                     </div>
                   </div>
                 {/snippet}

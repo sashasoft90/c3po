@@ -71,7 +71,7 @@
   }
 </script>
 
-<Drawer.Root bind:open>
+<Drawer.Root bind:open shouldScaleBackground={false}>
   <Drawer.Content>
     <Drawer.Header>
       <Drawer.Title>Новая запись</Drawer.Title>
@@ -153,7 +153,7 @@
         ></textarea>
       </div>
 
-      <Drawer.Footer class="flex gap-2">
+      <Drawer.Footer class="flex gap-2 pt-4">
         <Button type="submit" disabled={isSubmitting || !clientName.trim()} class="flex-1">
           {isSubmitting ? "Создание..." : "Создать запись"}
         </Button>

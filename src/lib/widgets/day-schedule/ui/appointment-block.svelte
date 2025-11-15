@@ -46,6 +46,7 @@
   let isResizing = $state(false);
   let resizeStartY = $state(0);
   let resizeStartDuration = $state(0);
+  let currentResizeHeight = $state(0); // For visual feedback during resize
 
   function handleDragStart(event: DragEvent) {
     if (isResizing) {
@@ -74,32 +75,53 @@
     isResizing = true;
     resizeStartY = event.clientY;
     resizeStartDuration = durationMinutes;
+    currentResizeHeight = heightPx;
 
     document.addEventListener("mousemove", handleResizeMove);
     document.addEventListener("mouseup", handleResizeEnd);
   }
 
-  async function handleResizeMove(event: MouseEvent) {
+  function handleResizeMove(event: MouseEvent) {
     if (!isResizing) return;
 
     const deltaY = event.clientY - resizeStartY;
     const deltaMinutes = Math.round((deltaY / slotHeightPx) * slotIntervalMinutes);
     const newDuration = Math.max(slotIntervalMinutes, resizeStartDuration + deltaMinutes);
 
-    // Update appointment duration via API
-    const { updateAppointment } = await import("@/shared/api/appointments");
-    await updateAppointment(appointment.id, {
-      durationMinutes: newDuration,
-    });
+    // Round to 15 minute intervals
+    const roundedDuration = Math.round(newDuration / 15) * 15;
+    const newHeight = (roundedDuration / slotIntervalMinutes) * slotHeightPx;
 
-    // Trigger parent refresh
-    onDragEnd?.();
+    // Update visual height immediately
+    currentResizeHeight = newHeight;
   }
 
-  function handleResizeEnd() {
+  async function handleResizeEnd() {
+    if (!isResizing) return;
+
     isResizing = false;
     document.removeEventListener("mousemove", handleResizeMove);
     document.removeEventListener("mouseup", handleResizeEnd);
+
+    // Calculate final duration from current height
+    const newDurationMinutes = Math.round(
+      (currentResizeHeight / slotHeightPx) * slotIntervalMinutes
+    );
+    const roundedDuration = Math.round(newDurationMinutes / 15) * 15;
+
+    // Only save if duration actually changed
+    if (roundedDuration !== durationMinutes) {
+      const { updateAppointment } = await import("@/shared/api/appointments");
+      await updateAppointment(appointment.id, {
+        durationMinutes: roundedDuration,
+      });
+
+      // Trigger parent refresh
+      onDragEnd?.();
+    }
+
+    // Reset visual height
+    currentResizeHeight = 0;
   }
 </script>
 
@@ -117,8 +139,9 @@
     className
   )}
   style:top="{topPx}px"
-  style:height="{heightPx}px"
+  style:height="{isResizing && currentResizeHeight > 0 ? currentResizeHeight : heightPx}px"
   style:min-height="48px"
+  style:pointer-events="auto"
   role="button"
   tabindex="0"
 >
