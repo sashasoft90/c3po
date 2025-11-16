@@ -72,7 +72,9 @@ export interface AppointmentPosition {
  * Calculate column layout for overlapping appointments
  * Returns layout information for each appointment
  */
-export function calculateAppointmentLayout(appointments: Appointment[]): Map<string, AppointmentLayout> {
+export function calculateAppointmentLayout(
+  appointments: Appointment[]
+): Map<string, AppointmentLayout> {
   const layout = new Map<string, AppointmentLayout>();
 
   if (appointments.length === 0) return layout;
@@ -90,7 +92,7 @@ export function calculateAppointmentLayout(appointments: Appointment[]): Map<str
     let foundGroup = false;
 
     for (const group of groups) {
-      const overlapsWithGroup = group.some(existing => appointmentsOverlap(apt, existing));
+      const overlapsWithGroup = group.some((existing) => appointmentsOverlap(apt, existing));
       if (overlapsWithGroup) {
         group.push(apt);
         foundGroup = true;
@@ -110,13 +112,13 @@ export function calculateAppointmentLayout(appointments: Appointment[]): Map<str
       layout.set(group[0].id, {
         appointmentId: group[0].id,
         column: 0,
-        totalColumns: 1
+        totalColumns: 1,
       });
     } else {
       // Multiple overlapping appointments - assign columns
       // Sort by start time within the group
-      const sortedGroup = [...group].sort((a, b) =>
-        timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
+      const sortedGroup = [...group].sort(
+        (a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
       );
 
       // Assign columns using a greedy algorithm
@@ -128,7 +130,7 @@ export function calculateAppointmentLayout(appointments: Appointment[]): Map<str
 
         for (let colIndex = 0; colIndex < columns.length; colIndex++) {
           const columnAppointments = columns[colIndex];
-          const overlapsInColumn = columnAppointments.some(existing =>
+          const overlapsInColumn = columnAppointments.some((existing) =>
             appointmentsOverlap(apt, existing)
           );
 
@@ -148,7 +150,7 @@ export function calculateAppointmentLayout(appointments: Appointment[]): Map<str
         layout.set(apt.id, {
           appointmentId: apt.id,
           column: assignedColumn,
-          totalColumns: 0 // Will be updated after all assignments
+          totalColumns: 0, // Will be updated after all assignments
         });
       }
 

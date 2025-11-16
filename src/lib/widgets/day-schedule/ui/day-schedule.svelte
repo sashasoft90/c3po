@@ -4,14 +4,17 @@
   // noinspection ES6UnusedImports
   import * as Carousel from "@/shared/ui/carousel";
   import { Skeleton } from "@/shared/ui/skeleton";
-  import { ScrollArea } from "@/shared/ui/scroll-area";
   import { cn } from "@/shared/utils";
   import { defaultLocale } from "@/shared/config";
-  import { debounce } from "@/shared/event-functions";
-  import { appointmentStore, calculateAppointmentLayout, type AppointmentLayout } from "@/entities/appointment";
+  import {
+    appointmentStore,
+    calculateAppointmentLayout,
+    type AppointmentLayout,
+  } from "@/entities/appointment";
   import { fetchAppointments } from "@/shared/api/appointments";
-  import AppointmentBlock from "./appointment-block.svelte";
   import { AppointmentCreateDialog } from "@/features/appointment";
+  import { useScrollSync } from "@/shared/lib/use-scroll-sync.svelte";
+  import DayColumn from "./day-column.svelte";
 
   let {
     selectedDate = $bindable<DateValue | undefined>(),
@@ -24,9 +27,6 @@
 
   // Cache timezone
   const tz = getLocalTimeZone();
-
-  // localStorage for scroll position persistence
-  const SCROLL_STORAGE_KEY = "day-schedule-scroll-position";
   const isBrowser = typeof window !== "undefined";
 
   // Generate days around selected date (for carousel navigation)
@@ -48,6 +48,14 @@
   // Carousel API for syncing
   let carouselApi = $state<CarouselAPI | undefined>();
 
+  // Scroll synchronization composable
+  const scrollSync = useScrollSync(
+    "day-schedule-scroll-position",
+    7, // 7 days in carousel
+    () => carouselApi?.selectedScrollSnap() ?? 0,
+    initialized
+  );
+
   // Disable carousel looping during drag and resize operations
   $effect(() => {
     if (!carouselApi) return;
@@ -58,31 +66,6 @@
     } else {
       // Re-enable looping when not dragging or resizing
       carouselApi.reInit({ loop: true });
-    }
-  });
-
-  // Synchronized scroll position across all days
-  let savedScrollTop = $state(0);
-  // Initialize array with correct length (7 days: -3, -2, -1, 0, +1, +2, +3)
-  let scrollViewportRefs = $state<(HTMLElement | null)[]>(Array(7).fill(null));
-
-  // Load scroll position from localStorage before first render (client-side only)
-  $effect.pre(() => {
-    if (isBrowser && initialized) {
-      const saved = localStorage.getItem(SCROLL_STORAGE_KEY);
-      if (saved) {
-        const scrollPos = parseInt(saved, 10);
-        if (!isNaN(scrollPos)) {
-          savedScrollTop = scrollPos;
-        }
-      }
-    }
-  });
-
-  // Save scroll position to localStorage whenever it changes
-  $effect(() => {
-    if (isBrowser && initialized && savedScrollTop > 0) {
-      localStorage.setItem(SCROLL_STORAGE_KEY, savedScrollTop.toString());
     }
   });
 
@@ -124,52 +107,13 @@
   // Restore saved scroll position to current viewport after initialization
   $effect(() => {
     if (!carouselApi || !initialized) return;
-
-    const currentIndex = carouselApi.selectedScrollSnap();
-    const currentViewport = scrollViewportRefs[currentIndex];
-
-    if (currentViewport && savedScrollTop > 0) {
-      currentViewport.scrollTop = savedScrollTop;
-    }
+    scrollSync.restoreScrollPosition();
   });
 
-  // Track scroll position on the currently active viewport
+  // Setup scroll synchronization for the current viewport
   $effect(() => {
     if (!carouselApi) return;
-
-    const currentIndex = carouselApi.selectedScrollSnap();
-    const currentViewport = scrollViewportRefs[currentIndex];
-
-    if (!currentViewport) return;
-
-    // Update saved position immediately
-    const handleScroll = () => {
-      if (currentViewport) {
-        savedScrollTop = currentViewport.scrollTop;
-      }
-    };
-
-    // Sync all viewports with debounce to avoid performance issues
-    const syncAllViewports = debounce(() => {
-      // Use requestAnimationFrame to batch DOM updates and sync with browser refresh
-      requestAnimationFrame(() => {
-        for (let i = 0; i < scrollViewportRefs.length; i++) {
-          const scrollArea = scrollViewportRefs[i];
-          // Don't update current viewport to avoid scroll loop
-          if (scrollArea && i !== currentIndex) {
-            scrollArea.scrollTop = savedScrollTop;
-          }
-        }
-      });
-    }, 150);
-
-    currentViewport.addEventListener("scroll", handleScroll, { passive: true });
-    currentViewport.addEventListener("scroll", syncAllViewports, { passive: true });
-
-    return () => {
-      currentViewport?.removeEventListener("scroll", handleScroll);
-      currentViewport?.removeEventListener("scroll", syncAllViewports);
-    };
+    return scrollSync.setupScrollSync();
   });
 
   // Generate time slots for the day
@@ -308,11 +252,6 @@
     }
   }
 
-  function isDropTarget(day: DateValue, time: string): boolean {
-    if (!dropTargetSlot) return false;
-    return dropTargetSlot.day.compare(day) === 0 && dropTargetSlot.time === time;
-  }
-
   // Appointment creation
   let createDialogOpen = $state(false);
   let createDialogDate = $state<DateValue>(today(tz));
@@ -388,90 +327,30 @@
       <Carousel.Content class="h-full">
         {#each days as day, dayIndex (day.toString())}
           <Carousel.Item class="flex h-full">
-            <div class="flex flex-1 shrink-0 flex-col gap-2 overflow-hidden">
-              <!-- Header with day of week -->
-              <div class="flex shrink-0 flex-col items-center gap-0">
-                <h2 class="text-2xl font-semibold capitalize">{formatDayOfWeek(day)}</h2>
-              </div>
-              <!-- Vertical scrollable time schedule -->
-              <ScrollArea class="min-h-0 flex-1" bind:viewportRef={scrollViewportRefs[dayIndex]}>
-                {#snippet children()}
-                  <div class="relative">
-                    <div class="flex flex-col gap-0">
-                      {#each timeSlots as { time, isHourStart } (time)}
-                        <div
-                          class={cn(
-                            "flex items-center gap-2",
-                            isHourStart ? "border-t-2 border-t-border" : ""
-                          )}
-                        >
-                          {#if isHourStart || showIntermediateLabels}
-                            <span
-                              class={cn(
-                                "w-12 text-sm",
-                                isHourStart
-                                  ? "text-base font-bold"
-                                  : "font-normal text-muted-foreground"
-                              )}
-                            >
-                              {time}
-                            </span>
-                          {:else}
-                            <span class="w-12"></span>
-                          {/if}
-                          <div
-                            role="button"
-                            tabindex="0"
-                            onclick={() => handleSlotClick(day, time)}
-                            onkeydown={(e) => handleSlotKeydown(e, day, time)}
-                            onmousedown={() => handleSlotMouseDown(day, time)}
-                            onmouseup={handleSlotMouseUp}
-                            onmouseleave={handleSlotMouseUp}
-                            ontouchstart={() => handleSlotMouseDown(day, time)}
-                            ontouchend={handleSlotMouseUp}
-                            ontouchcancel={handleSlotMouseUp}
-                            ondragover={(e) => handleSlotDragOver(e, day, time)}
-                            ondragleave={handleSlotDragLeave}
-                            ondrop={(e) => handleSlotDrop(e, day, time)}
-                            class={cn(
-                              "h-8 flex-1 cursor-pointer rounded border-x border-dashed border-border/100 transition-colors",
-                              "hover:border-border/50 hover:bg-accent/20",
-                              "active:border-border/50 active:bg-accent/30",
-                              !isHourStart ? "border-t border-t-border/100" : "",
-                              isDropTarget(day, time) && "border-primary bg-primary/20"
-                            )}
-                          ></div>
-                        </div>
-                      {/each}
-                    </div>
-
-                    <!-- Appointment blocks overlay (absolute positioning) -->
-                    <!-- left-14 = w-12 time label (48px) + gap-4 (8px) = 56px -->
-                    <div
-                      class="absolute top-0 right-2 left-16"
-                      style="height: {timeSlots.length * SLOT_HEIGHT_PX}px; pointer-events: none;"
-                    >
-                      {#each getAppointmentsForDay(day) as appointment (appointment.id)}
-                        {@const layoutMap = getAppointmentLayoutForDay(day)}
-                        {@const layout = layoutMap.get(appointment.id)}
-                        <AppointmentBlock
-                          {appointment}
-                          slotHeightPx={SLOT_HEIGHT_PX}
-                          slotIntervalMinutes={intervalMinutes}
-                          hourlyBorderHeightPx={HOURLY_BORDER_HEIGHT_PX}
-                          column={layout?.column ?? 0}
-                          totalColumns={layout?.totalColumns ?? 1}
-                          onDragStart={handleAppointmentDragStart}
-                          onDragEnd={handleAppointmentDragEnd}
-                          onResizeStart={handleAppointmentResizeStart}
-                          onResizeEnd={handleAppointmentResizeEnd}
-                        />
-                      {/each}
-                    </div>
-                  </div>
-                {/snippet}
-              </ScrollArea>
-            </div>
+            <DayColumn
+              {day}
+              dayOfWeek={formatDayOfWeek(day)}
+              {timeSlots}
+              appointments={getAppointmentsForDay(day)}
+              appointmentLayout={getAppointmentLayoutForDay(day)}
+              {showIntermediateLabels}
+              slotHeightPx={SLOT_HEIGHT_PX}
+              slotIntervalMinutes={intervalMinutes}
+              hourlyBorderHeightPx={HOURLY_BORDER_HEIGHT_PX}
+              {dropTargetSlot}
+              bind:scrollViewportRef={scrollSync.scrollViewportRefs[dayIndex]}
+              onSlotClick={handleSlotClick}
+              onSlotDragOver={handleSlotDragOver}
+              onSlotDragLeave={handleSlotDragLeave}
+              onSlotDrop={handleSlotDrop}
+              onSlotMouseDown={handleSlotMouseDown}
+              onSlotMouseUp={handleSlotMouseUp}
+              onSlotKeydown={handleSlotKeydown}
+              onAppointmentDragStart={handleAppointmentDragStart}
+              onAppointmentDragEnd={handleAppointmentDragEnd}
+              onAppointmentResizeStart={handleAppointmentResizeStart}
+              onAppointmentResizeEnd={handleAppointmentResizeEnd}
+            />
           </Carousel.Item>
         {/each}
       </Carousel.Content>
