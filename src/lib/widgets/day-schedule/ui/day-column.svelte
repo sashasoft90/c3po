@@ -66,46 +66,44 @@
 
   <!-- Vertical scrollable time schedule -->
   <ScrollArea class="min-h-0 flex-1" bind:viewportRef={scrollViewportRef}>
-    {#snippet children()}
-      <div class="relative">
-        <!-- Time slots grid -->
-        <TimeSlotGrid
-          {day}
-          {timeSlots}
-          {showIntermediateLabels}
-          {dropTargetSlot}
-          {onSlotClick}
-          {onSlotDragOver}
-          {onSlotDragLeave}
-          {onSlotDrop}
-          {onSlotMouseDown}
-          {onSlotMouseUp}
-          {onSlotKeydown}
-        />
+    <div class="relative">
+      <!-- Time slots grid -->
+      <TimeSlotGrid
+        {day}
+        {timeSlots}
+        {showIntermediateLabels}
+        {dropTargetSlot}
+        {onSlotClick}
+        {onSlotDragOver}
+        {onSlotDragLeave}
+        {onSlotDrop}
+        {onSlotMouseDown}
+        {onSlotMouseUp}
+        {onSlotKeydown}
+      />
 
-        <!-- Appointment blocks overlay (absolute positioning) -->
-        <!-- left-16 = w-12 time label (48px) + gap-2 (8px) = 56px -->
-        <div
-          class="absolute top-0 right-2 left-16"
-          style="height: {timeSlots.length * slotHeightPx}px; pointer-events: none;"
-        >
-          {#each appointments as appointment (appointment.id)}
-            {@const layout = appointmentLayout.get(appointment.id)}
-            <AppointmentBlock
-              {appointment}
-              {slotHeightPx}
-              {slotIntervalMinutes}
-              {hourlyBorderHeightPx}
-              column={layout?.column ?? 0}
-              totalColumns={layout?.totalColumns ?? 1}
-              onDragStart={onAppointmentDragStart}
-              onDragEnd={onAppointmentDragEnd}
-              onResizeStart={onAppointmentResizeStart}
-              onResizeEnd={onAppointmentResizeEnd}
-            />
-          {/each}
-        </div>
+      <!-- Appointment blocks overlay (absolute positioning) -->
+      <!-- left-16 = w-12 time label (48px) + gap-2 (8px) = 56px -->
+      <div
+        class="absolute top-0 right-2 left-16"
+        style="height: {timeSlots.length * slotHeightPx}px; pointer-events: none;"
+      >
+        {#each appointments as appointment (appointment.id)}
+          {@const layout = appointmentLayout.get(appointment.id)}
+          <AppointmentBlock
+            {appointment}
+            {slotHeightPx}
+            {slotIntervalMinutes}
+            {hourlyBorderHeightPx}
+            column={layout?.column ?? 0}
+            totalColumns={layout?.totalColumns ?? 1}
+            onDragStart={onAppointmentDragStart}
+            onDragEnd={onAppointmentDragEnd}
+            onResizeStart={onAppointmentResizeStart}
+            onResizeEnd={onAppointmentResizeEnd}
+          />
+        {/each}
       </div>
-    {/snippet}
+    </div>
   </ScrollArea>
 </div>

@@ -9,7 +9,10 @@
       "Bash(pnpm test:run:*)",
       "Bash(pnpm test:e2e:*)",
       "Bash(pnpm test:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm format:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []

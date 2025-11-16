@@ -14,6 +14,7 @@
   import { fetchAppointments } from "@/shared/api/appointments";
   import { AppointmentCreateDialog } from "@/features/appointment";
   import { useScrollSync } from "@/shared/lib/use-scroll-sync.svelte";
+  import { roundTimeToInterval } from "@/shared/types";
   import DayColumn from "./day-column.svelte";
 
   let {
@@ -165,7 +166,6 @@
   // Drag and drop state
   let draggedAppointmentId = $state<string | null>(null);
   let dropTargetSlot = $state<{ day: DateValue; time: string } | null>(null);
-  let dragPreviewSlot = $state<{ day: DateValue; time: string } | null>(null);
 
   // Resize state
   let isResizing = $state(false);
@@ -177,7 +177,6 @@
   async function handleAppointmentDragEnd() {
     draggedAppointmentId = null;
     dropTargetSlot = null;
-    dragPreviewSlot = null;
     // No need to refresh - optimistic update already applied
   }
 
@@ -196,11 +195,9 @@
     }
 
     // Round time to 15-minute intervals
-    const { roundTimeToInterval } = require("@/shared/types");
     const roundedTime = roundTimeToInterval(time, 15);
 
     dropTargetSlot = { day, time: roundedTime };
-    dragPreviewSlot = { day, time: roundedTime };
   }
 
   function handleSlotDragLeave() {
@@ -208,7 +205,6 @@
     setTimeout(() => {
       if (!draggedAppointmentId) {
         dropTargetSlot = null;
-        dragPreviewSlot = null;
       }
     }, 50);
   }
@@ -224,7 +220,6 @@
       if (!data) return;
 
       const { appointmentId } = JSON.parse(data);
-      const { roundTimeToInterval } = await import("@/shared/types");
 
       // Round to 15-minute intervals
       const roundedTime = roundTimeToInterval(time, 15);

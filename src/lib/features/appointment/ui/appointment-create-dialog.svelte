@@ -89,7 +89,7 @@
           bind:value={selectedServiceType}
           class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
         >
-          {#each Object.values(ServiceType) as type}
+          {#each Object.values(ServiceType) as type (type)}
             <option value={type}>{SERVICE_CONFIGS[type].displayName}</option>
           {/each}
         </select>
@@ -157,8 +157,10 @@
         <Button type="submit" disabled={isSubmitting || !clientName.trim()} class="flex-1">
           {isSubmitting ? "Создание..." : "Создать запись"}
         </Button>
-        <Drawer.Close asChild let:builder>
-          <Button builders={[builder]} variant="outline" disabled={isSubmitting}>Отмена</Button>
+        <Drawer.Close>
+          {#snippet child({ props })}
+            <Button {...props} variant="outline" disabled={isSubmitting}>Отмена</Button>
+          {/snippet}
         </Drawer.Close>
       </Drawer.Footer>
     </form>
