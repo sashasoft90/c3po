@@ -9,6 +9,13 @@ class AppointmentStore {
   appointments = $state<Appointment[]>([]);
 
   /**
+   * Get appointment by ID
+   */
+  getById(id: string): Appointment | undefined {
+    return this.appointments.find((apt) => apt.id === id);
+  }
+
+  /**
    * Get appointments for a specific date
    */
   getByDate(date: DateValue): Appointment[] {

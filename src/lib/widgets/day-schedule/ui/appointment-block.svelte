@@ -17,6 +17,7 @@
     hourlyBorderHeightPx = 2,
     column = 0,
     totalColumns = 1,
+    isDraggingOther = false,
     onDragStart,
     onDragEnd,
     onResizeStart,
@@ -29,6 +30,7 @@
     hourlyBorderHeightPx?: number;
     column?: number;
     totalColumns?: number;
+    isDraggingOther?: boolean;
     onDragStart?: (appointmentId: string) => void;
     onDragEnd?: () => void;
     onResizeStart?: () => void;
@@ -58,7 +60,13 @@
   const topPx = $derived(position.topPx);
   const heightPx = $derived(position.heightPx);
 
+  // Offset for time label area (w-12 = 48px + gap-2 = 8px = 56px total)
+  const LEFT_OFFSET_PX = 64; // matches left-16 class (16 * 4px = 64px)
+  const RIGHT_OFFSET_PX = 8; // matches right-2 class (2 * 4px = 8px)
+
   // Calculate horizontal positioning for overlapping appointments
+  // Available width is: 100% - LEFT_OFFSET - RIGHT_OFFSET
+  const availableWidthCalc = `(100% - ${LEFT_OFFSET_PX}px - ${RIGHT_OFFSET_PX}px)`;
   const widthPercent = $derived((1 / totalColumns) * 100);
   const leftPercent = $derived((column / totalColumns) * 100);
 
@@ -96,25 +104,26 @@
 </script>
 
 <div
-  draggable="true"
-  ondragstart={drag.handleDragStart}
-  ondragend={drag.handleDragEnd}
+  draggable="false"
+  onmousedown={drag.handleMouseDown}
+  ontouchstart={drag.handleTouchStart}
   class={cn(
     "group absolute z-10 overflow-hidden rounded border-2 border-l-4 px-2 py-1 shadow-md transition-all hover:shadow-lg",
     serviceConfig.color,
     "border-white/30 border-l-white/80 text-white",
-    drag.isDragging && "scale-95 opacity-50",
+    drag.isDragging && "pointer-events-none opacity-30",
+    isDraggingOther && "pointer-events-none opacity-50",
+    !drag.isDragging && !isDraggingOther && "pointer-events-auto",
     resize.isResizing && "cursor-ns-resize",
-    !resize.isResizing && "cursor-move",
+    !resize.isResizing && !drag.isDragging && "cursor-move",
     className
   )}
-  style:top="{topPx}px"
+  style:top={`${topPx}px`}
   style:height="{resize.isResizing && resize.currentResizeHeight > 0
     ? resize.currentResizeHeight
     : heightPx}px"
-  style:left="{leftPercent}%"
-  style:width="{widthPercent}%"
-  style:pointer-events="auto"
+  style:left="calc({LEFT_OFFSET_PX}px + {availableWidthCalc} * {leftPercent / 100})"
+  style:width="calc({availableWidthCalc} * {widthPercent / 100})"
   role="button"
   tabindex="0"
 >

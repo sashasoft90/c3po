@@ -14,7 +14,7 @@
   import { fetchAppointments } from "@/shared/api/appointments";
   import { AppointmentCreateDialog } from "@/features/appointment";
   import { useScrollSync } from "@/shared/lib/use-scroll-sync.svelte";
-  import { roundTimeToInterval } from "@/shared/types";
+  import { roundTimeToInterval, getServiceConfig } from "@/shared/types";
   import DayColumn from "./day-column.svelte";
 
   let {
@@ -166,6 +166,36 @@
   // Drag and drop state
   let draggedAppointmentId = $state<string | null>(null);
   let dropTargetSlot = $state<{ day: DateValue; time: string } | null>(null);
+  let dragPreviewPosition = $state<{ x: number; y: number } | null>(null);
+  const isDragging = $derived(!!draggedAppointmentId);
+
+  // Get dragged appointment data for preview
+  const draggedAppointment = $derived.by(() => {
+    if (!draggedAppointmentId) return null;
+    return appointmentStore.getById(draggedAppointmentId);
+  });
+
+  // Track mouse position during drag for preview
+  if (isBrowser) {
+    $effect(() => {
+      if (!isDragging) {
+        dragPreviewPosition = null;
+        return;
+      }
+
+      const handleGlobalMouseMove = (e: MouseEvent) => {
+        if (draggedAppointmentId) {
+          dragPreviewPosition = { x: e.clientX, y: e.clientY };
+        }
+      };
+
+      document.addEventListener("mousemove", handleGlobalMouseMove);
+
+      return () => {
+        document.removeEventListener("mousemove", handleGlobalMouseMove);
+      };
+    });
+  }
 
   // Resize state
   let isResizing = $state(false);
@@ -177,7 +207,7 @@
   async function handleAppointmentDragEnd() {
     draggedAppointmentId = null;
     dropTargetSlot = null;
-    // No need to refresh - optimistic update already applied
+    dragPreviewPosition = null;
   }
 
   function handleAppointmentResizeStart() {
@@ -188,39 +218,28 @@
     isResizing = false;
   }
 
-  function handleSlotDragOver(event: DragEvent, day: DateValue, time: string) {
-    event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = "move";
-    }
+  function handleSlotMouseEnter(day: DateValue, time: string) {
+    if (!draggedAppointmentId) return;
 
     // Round time to 15-minute intervals
     const roundedTime = roundTimeToInterval(time, 15);
-
     dropTargetSlot = { day, time: roundedTime };
   }
 
-  function handleSlotDragLeave() {
-    // Don't clear immediately to avoid flicker
-    setTimeout(() => {
-      if (!draggedAppointmentId) {
-        dropTargetSlot = null;
-      }
-    }, 50);
+  function handleSlotMouseLeave() {
+    // Don't clear dropTargetSlot on mouseleave - only clear it when drag ends
+    // This prevents flickering when mouse briefly leaves slot during drag
   }
 
-  async function handleSlotDrop(event: DragEvent, day: DateValue, time: string) {
-    event.preventDefault();
-    dropTargetSlot = null;
-
+  async function handleSlotMouseUp(day: DateValue, time: string) {
     if (!draggedAppointmentId) return;
 
+    const appointmentId = draggedAppointmentId;
+
+    // Clear drop target
+    dropTargetSlot = null;
+
     try {
-      const data = event.dataTransfer?.getData("application/json");
-      if (!data) return;
-
-      const { appointmentId } = JSON.parse(data);
-
       // Round to 15-minute intervals
       const roundedTime = roundTimeToInterval(time, 15);
 
@@ -251,8 +270,6 @@
   let createDialogOpen = $state(false);
   let createDialogDate = $state<DateValue>(today(tz));
   let createDialogTime = $state("09:00");
-  let longPressTimer: number | null = null;
-  const LONG_PRESS_DURATION = 300; // milliseconds
 
   function handleSlotClick(day: DateValue, time: string) {
     if (draggedAppointmentId) return; // Don't open dialog during drag
@@ -260,21 +277,6 @@
     createDialogDate = day;
     createDialogTime = time;
     createDialogOpen = true;
-  }
-
-  function handleSlotMouseDown(day: DateValue, time: string) {
-    // Start long press timer for mobile/touch devices
-    longPressTimer = window.setTimeout(() => {
-      handleSlotClick(day, time);
-    }, LONG_PRESS_DURATION);
-  }
-
-  function handleSlotMouseUp() {
-    // Cancel long press if mouse/touch is released
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-    }
   }
 
   async function handleAppointmentCreated() {
@@ -333,12 +335,12 @@
               slotIntervalMinutes={intervalMinutes}
               hourlyBorderHeightPx={HOURLY_BORDER_HEIGHT_PX}
               {dropTargetSlot}
+              {isDragging}
+              {draggedAppointmentId}
               bind:scrollViewportRef={scrollSync.scrollViewportRefs[dayIndex]}
               onSlotClick={handleSlotClick}
-              onSlotDragOver={handleSlotDragOver}
-              onSlotDragLeave={handleSlotDragLeave}
-              onSlotDrop={handleSlotDrop}
-              onSlotMouseDown={handleSlotMouseDown}
+              onSlotMouseEnter={handleSlotMouseEnter}
+              onSlotMouseLeave={handleSlotMouseLeave}
               onSlotMouseUp={handleSlotMouseUp}
               onSlotKeydown={handleSlotKeydown}
               onAppointmentDragStart={handleAppointmentDragStart}
@@ -358,5 +360,35 @@
       startTime={createDialogTime}
       onCreated={handleAppointmentCreated}
     />
+
+    <!-- Drag preview following cursor -->
+    {#if isDragging && draggedAppointment && dragPreviewPosition}
+      {@const serviceConfig = getServiceConfig(draggedAppointment.serviceType)}
+      <div
+        class={cn(
+          "pointer-events-none fixed z-50 rounded border-2 border-l-4 px-2 py-1 opacity-80 shadow-lg",
+          serviceConfig.color,
+          "border-white/30 border-l-white/80 text-white"
+        )}
+        style:left="{dragPreviewPosition.x + 10}px"
+        style:top="{dragPreviewPosition.y + 10}px"
+        style:width="180px"
+      >
+        <div class="text-xs font-semibold">
+          {serviceConfig.displayName}
+        </div>
+        <div class="text-xs opacity-90">
+          {draggedAppointment.clients.map((c) => c.name).join(", ")}
+        </div>
+        <div class="text-xs opacity-75">
+          {draggedAppointment.startTime}
+        </div>
+        {#if dropTargetSlot}
+          <div class="mt-1 border-t border-white/30 pt-1 text-xs font-bold">
+            → {dropTargetSlot.time}
+          </div>
+        {/if}
+      </div>
+    {/if}
   {/if}
 </div>
