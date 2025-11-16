@@ -236,16 +236,21 @@
     const clampedY = Math.max(0, Math.min(relativeY, rect.height - 1));
     const slotProgress = clampedY / rect.height; // 0 to 1
 
-    // Calculate minutes offset within the slot
-    const minutesOffset = Math.floor(slotProgress * intervalMinutes);
+    // Split slot into two equal zones (upper half = 00/30, lower half = 15/45)
     const [hours, minutes] = time.split(":").map(Number);
-    const totalMinutes = hours * 60 + minutes + minutesOffset;
+    const baseMinutes = hours * 60 + minutes;
 
-    // Round to 15-minute intervals
-    const roundedMinutes = Math.round(totalMinutes / 15) * 15;
-    const finalHours = Math.floor(roundedMinutes / 60);
-    const finalMinutes = roundedMinutes % 60;
-    const finalTime = `${String(finalHours).padStart(2, "0")}:${String(finalMinutes).padStart(2, "0")}`;
+    let finalTime: string;
+    if (slotProgress < 0.5) {
+      // Upper half - use slot's base time (00 or 30)
+      finalTime = time;
+    } else {
+      // Lower half - add 15 minutes to slot's base time
+      const adjustedMinutes = baseMinutes + 15;
+      const finalHours = Math.floor(adjustedMinutes / 60);
+      const finalMinutes = adjustedMinutes % 60;
+      finalTime = `${String(finalHours).padStart(2, "0")}:${String(finalMinutes).padStart(2, "0")}`;
+    }
 
     dropTargetSlot = { day, time: finalTime };
   }
