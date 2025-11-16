@@ -48,6 +48,9 @@
 
   // Calculate CSS position (top) and height
   // Each slot is slotHeightPx tall and represents slotIntervalMinutes
+  // Position is calculated based on how many slots from midnight (0:00)
+  // For example: 10:00 = 600 minutes from midnight
+  // With 30-minute slots and 32px height: 600 minutes = 20 slots = 640px
   const topPx = $derived((startMinutes / slotIntervalMinutes) * slotHeightPx);
   const heightPx = $derived((durationMinutes / slotIntervalMinutes) * slotHeightPx);
 
@@ -149,7 +152,7 @@
   class={cn(
     "group absolute right-0 left-0 z-10 overflow-hidden rounded border-2 border-l-4 px-2 py-1 shadow-md transition-all hover:shadow-lg",
     serviceConfig.color,
-    "border-opacity-50 bg-opacity-90 border-l-white/80 text-white",
+    "border-white/30 border-l-white/80 text-white",
     isDragging && "scale-95 opacity-50",
     isResizing && "cursor-ns-resize",
     !isResizing && "cursor-move",

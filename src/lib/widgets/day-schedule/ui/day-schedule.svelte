@@ -48,6 +48,19 @@
   // Carousel API for syncing
   let carouselApi = $state<CarouselAPI | undefined>();
 
+  // Disable carousel looping during drag operations
+  $effect(() => {
+    if (!carouselApi) return;
+
+    if (draggedAppointmentId) {
+      // Disable looping when dragging
+      carouselApi.reInit({ loop: false });
+    } else {
+      // Re-enable looping when not dragging
+      carouselApi.reInit({ loop: true });
+    }
+  });
+
   // Synchronized scroll position across all days
   let savedScrollTop = $state(0);
   // Initialize array with correct length (7 days: -3, -2, -1, 0, +1, +2, +3)
@@ -415,6 +428,7 @@
                     </div>
 
                     <!-- Appointment blocks overlay (absolute positioning) -->
+                    <!-- left-14 = w-12 time label (48px) + gap-4 (8px) = 56px -->
                     <div
                       class="absolute top-0 right-2 left-16"
                       style="height: {timeSlots.length * SLOT_HEIGHT_PX}px; pointer-events: none;"
