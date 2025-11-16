@@ -33,6 +33,19 @@
   const endMinutes = $derived(timeToMinutes(endTime));
   const durationMinutes = $derived(endMinutes - startMinutes);
 
+  // Calculate preview end time during resize
+  const previewEndTime = $derived.by(() => {
+    if (isResizing && currentResizeHeight > 0) {
+      const resizeDuration = Math.round((currentResizeHeight / slotHeightPx) * slotIntervalMinutes);
+      const roundedDuration = Math.round(resizeDuration / 15) * 15;
+      const totalMinutes = startMinutes + roundedDuration;
+      const hours = Math.floor(totalMinutes / 60);
+      const mins = totalMinutes % 60;
+      return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+    }
+    return endTime;
+  });
+
   // Calculate CSS position (top) and height
   // Each slot is slotHeightPx tall and represents slotIntervalMinutes
   const topPx = $derived((startMinutes / slotIntervalMinutes) * slotHeightPx);
@@ -109,19 +122,23 @@
     );
     const roundedDuration = Math.round(newDurationMinutes / 15) * 15;
 
+    // Reset visual height
+    currentResizeHeight = 0;
+
     // Only save if duration actually changed
     if (roundedDuration !== durationMinutes) {
+      // Optimistic update - update store immediately
+      const { appointmentStore } = await import("@/entities/appointment");
+      appointmentStore.update(appointment.id, {
+        durationMinutes: roundedDuration,
+      });
+
+      // Then sync with API in background
       const { updateAppointment } = await import("@/shared/api/appointments");
       await updateAppointment(appointment.id, {
         durationMinutes: roundedDuration,
       });
-
-      // Trigger parent refresh
-      onDragEnd?.();
     }
-
-    // Reset visual height
-    currentResizeHeight = 0;
   }
 </script>
 
@@ -149,7 +166,7 @@
     <div class="truncate text-sm leading-tight font-semibold">{serviceConfig.displayName}</div>
     <div class="truncate text-xs leading-tight text-white/90">{clientNames}</div>
     <div class="text-[10px] leading-tight text-white/70">
-      {appointment.startTime} - {endTime}
+      {appointment.startTime} - {previewEndTime}
     </div>
     {#if appointment.notes && heightPx > 80}
       <div class="truncate text-[10px] leading-tight text-white/60 italic">

@@ -211,12 +211,7 @@
     draggedAppointmentId = null;
     dropTargetSlot = null;
     dragPreviewSlot = null;
-
-    // Refresh appointments to show updates
-    const response = await fetchAppointments();
-    if (response.data) {
-      appointmentStore.setAll(response.data);
-    }
+    // No need to refresh - optimistic update already applied
   }
 
   function handleSlotDragOver(event: DragEvent, day: DateValue, time: string) {
@@ -254,26 +249,31 @@
       if (!data) return;
 
       const { appointmentId } = JSON.parse(data);
-
-      // Update appointment with new date and time
-      const { updateAppointment } = await import("@/shared/api/appointments");
       const { roundTimeToInterval } = await import("@/shared/types");
 
       // Round to 15-minute intervals
       const roundedTime = roundTimeToInterval(time, 15);
 
-      await updateAppointment(appointmentId, {
+      // Optimistic update - update store immediately for instant UI feedback
+      appointmentStore.update(appointmentId, {
         date: day,
         startTime: roundedTime,
       });
 
-      // Refresh appointments
+      // Then sync with API in background
+      const { updateAppointment } = await import("@/shared/api/appointments");
+      await updateAppointment(appointmentId, {
+        date: day,
+        startTime: roundedTime,
+      });
+    } catch (error) {
+      console.error("Failed to update appointment:", error);
+
+      // On error, refresh from API to get correct state
       const response = await fetchAppointments();
       if (response.data) {
         appointmentStore.setAll(response.data);
       }
-    } catch (error) {
-      console.error("Failed to update appointment:", error);
     }
   }
 
