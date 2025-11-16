@@ -8,7 +8,7 @@
   import { cn } from "@/shared/utils";
   import { defaultLocale } from "@/shared/config";
   import { debounce } from "@/shared/event-functions";
-  import { appointmentStore } from "@/entities/appointment";
+  import { appointmentStore, calculateAppointmentLayout, type AppointmentLayout } from "@/entities/appointment";
   import { fetchAppointments } from "@/shared/api/appointments";
   import AppointmentBlock from "./appointment-block.svelte";
   import { AppointmentCreateDialog } from "@/features/appointment";
@@ -206,6 +206,12 @@
   // Get appointments for a specific day
   function getAppointmentsForDay(day: DateValue) {
     return appointmentStore.getByDate(day);
+  }
+
+  // Calculate layout for appointments on each day (handles overlaps)
+  function getAppointmentLayoutForDay(day: DateValue): Map<string, AppointmentLayout> {
+    const appointments = getAppointmentsForDay(day);
+    return calculateAppointmentLayout(appointments);
   }
 
   // Calculate slot height in pixels (needed for appointment positioning)
@@ -445,10 +451,14 @@
                       style="height: {timeSlots.length * SLOT_HEIGHT_PX}px; pointer-events: none;"
                     >
                       {#each getAppointmentsForDay(day) as appointment (appointment.id)}
+                        {@const layoutMap = getAppointmentLayoutForDay(day)}
+                        {@const layout = layoutMap.get(appointment.id)}
                         <AppointmentBlock
                           {appointment}
                           slotHeightPx={SLOT_HEIGHT_PX}
                           slotIntervalMinutes={intervalMinutes}
+                          column={layout?.column ?? 0}
+                          totalColumns={layout?.totalColumns ?? 1}
                           onDragStart={handleAppointmentDragStart}
                           onDragEnd={handleAppointmentDragEnd}
                           onResizeStart={handleAppointmentResizeStart}

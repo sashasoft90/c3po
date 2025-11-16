@@ -12,6 +12,8 @@
     appointment,
     slotHeightPx,
     slotIntervalMinutes,
+    column = 0,
+    totalColumns = 1,
     onDragStart,
     onDragEnd,
     onResizeStart,
@@ -21,6 +23,8 @@
     appointment: Appointment;
     slotHeightPx: number;
     slotIntervalMinutes: number;
+    column?: number;
+    totalColumns?: number;
     onDragStart?: (appointmentId: string) => void;
     onDragEnd?: () => void;
     onResizeStart?: () => void;
@@ -53,13 +57,22 @@
   // Calculate CSS position (top) and height
   // Each slot is slotHeightPx tall and represents slotIntervalMinutes
   // Position is calculated based on how many slots from midnight (0:00)
-  // For example: 10:00 = 600 minutes from midnight
-  // With 30-minute slots and 32px height: 600 minutes = 20 slots = 640px
-  const topPx = $derived((startMinutes / slotIntervalMinutes) * slotHeightPx);
+  // Need to account for borders: hourly slots have 2px border-t, half-hour slots have 1px border-t
+  const slotsFromMidnight = $derived(startMinutes / slotIntervalMinutes);
+  const hourlySlotsBefore = $derived(Math.floor(startMinutes / 60)); // Number of hour markers before this time
+  const halfHourSlotsBefore = $derived(slotsFromMidnight - hourlySlotsBefore); // Number of half-hour slots
+  const borderOffset = $derived(hourlySlotsBefore * 2 + halfHourSlotsBefore * 1);
+
+  const topPx = $derived(slotsFromMidnight * slotHeightPx + borderOffset);
   const heightPx = $derived((durationMinutes / slotIntervalMinutes) * slotHeightPx);
 
+  // Calculate horizontal positioning for overlapping appointments
+  // Width is divided by totalColumns, positioned at column index
+  const widthPercent = $derived((1 / totalColumns) * 100);
+  const leftPercent = $derived((column / totalColumns) * 100);
+
   // Format client names
-  const clientNames = $derived(appointment.clients.map((c) => c.name).join(", "));
+  const clientNames = $derived(appointment.clients.map((c: { name: string }) => c.name).join(", "));
 
   // Drag state
   let isDragging = $state(false);
@@ -160,7 +173,7 @@
   ondragstart={handleDragStart}
   ondragend={handleDragEnd}
   class={cn(
-    "group absolute right-0 left-0 z-10 overflow-hidden rounded border-2 border-l-4 px-2 py-1 shadow-md transition-all hover:shadow-lg",
+    "group absolute z-10 overflow-hidden rounded border-2 border-l-4 px-2 py-1 shadow-md transition-all hover:shadow-lg",
     serviceConfig.color,
     "border-white/30 border-l-white/80 text-white",
     isDragging && "scale-95 opacity-50",
@@ -171,6 +184,8 @@
   style:top="{topPx}px"
   style:height="{isResizing && currentResizeHeight > 0 ? currentResizeHeight : heightPx}px"
   style:min-height="48px"
+  style:left="{leftPercent}%"
+  style:width="{widthPercent}%"
   style:pointer-events="auto"
   role="button"
   tabindex="0"
