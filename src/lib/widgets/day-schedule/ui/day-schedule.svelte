@@ -216,6 +216,7 @@
 
   // Calculate slot height in pixels (needed for appointment positioning)
   const SLOT_HEIGHT_PX = 32; // matches h-8 class (8 * 4px = 32px)
+  const HOURLY_BORDER_HEIGHT_PX = 2; // matches border-t-2 class (2px)
 
   // Drag and drop state
   let draggedAppointmentId = $state<string | null>(null);
@@ -457,6 +458,7 @@
                           {appointment}
                           slotHeightPx={SLOT_HEIGHT_PX}
                           slotIntervalMinutes={intervalMinutes}
+                          hourlyBorderHeightPx={HOURLY_BORDER_HEIGHT_PX}
                           column={layout?.column ?? 0}
                           totalColumns={layout?.totalColumns ?? 1}
                           onDragStart={handleAppointmentDragStart}

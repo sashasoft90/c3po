@@ -61,6 +61,14 @@ export interface AppointmentLayout {
 }
 
 /**
+ * Position information for appointment block rendering
+ */
+export interface AppointmentPosition {
+  topPx: number;
+  heightPx: number;
+}
+
+/**
  * Calculate column layout for overlapping appointments
  * Returns layout information for each appointment
  */
@@ -156,4 +164,55 @@ export function calculateAppointmentLayout(appointments: Appointment[]): Map<str
   }
 
   return layout;
+}
+
+/**
+ * Calculate appointment block position (top and height in pixels)
+ * Accounts for borders on hourly and half-hourly time slots
+ *
+ * @param startTime - Appointment start time (e.g., "10:30")
+ * @param durationMinutes - Appointment duration in minutes
+ * @param slotHeightPx - Height of each time slot in pixels (default: 32)
+ * @param slotIntervalMinutes - Duration of each slot in minutes (default: 30)
+ * @param hourlyBorderHeightPx - Height of border on hourly slots in pixels (default: 2)
+ * @returns Position object with topPx and heightPx
+ */
+export function calculateAppointmentPosition(
+  startTime: string,
+  durationMinutes: number,
+  slotHeightPx: number = 32,
+  slotIntervalMinutes: number = 30,
+  hourlyBorderHeightPx: number = 2
+): AppointmentPosition {
+  const startMinutes = timeToMinutes(startTime);
+  const endMinutes = startMinutes + durationMinutes;
+
+  // Calculate top position
+  // Account for border on each hourly slot before the start time
+  const slotsFromMidnight = startMinutes / slotIntervalMinutes;
+  const hourlySlotsBefore = Math.max(Math.floor(startMinutes / 60), 0) + 1;
+  const borderOffset = hourlySlotsBefore * hourlyBorderHeightPx;
+  const topPx = slotsFromMidnight * slotHeightPx + borderOffset;
+
+  // Calculate height
+  // Account for borders on hourly slots INSIDE the appointment (not on edges)
+  const startsOnHour = startMinutes % 60 === 0;
+  const endsOnHour = endMinutes % 60 === 0;
+
+  // Calculate first hour AFTER start (first hour inside, not on edge)
+  const firstHourInside = startsOnHour ? startMinutes + 60 : Math.ceil(startMinutes / 60) * 60;
+
+  // Calculate last hour BEFORE end (last hour inside, not on edge)
+  const lastHourInside = endsOnHour ? endMinutes - 60 : Math.floor(endMinutes / 60) * 60;
+
+  // Count how many hours are between first and last (inclusive)
+  let hourBoundariesCrossed = 0;
+  if (firstHourInside <= lastHourInside) {
+    hourBoundariesCrossed = (lastHourInside - firstHourInside) / 60 + 1;
+  }
+
+  const heightBorderOffset = hourBoundariesCrossed * hourlyBorderHeightPx;
+  const heightPx = (durationMinutes / slotIntervalMinutes) * slotHeightPx + heightBorderOffset;
+
+  return { topPx, heightPx };
 }

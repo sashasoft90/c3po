@@ -6,12 +6,14 @@
     timeToMinutes,
     type ServiceConfig,
   } from "@/shared/types";
+  import { calculateAppointmentPosition } from "@/entities/appointment";
   import { cn } from "@/shared/utils";
 
   let {
     appointment,
     slotHeightPx,
     slotIntervalMinutes,
+    hourlyBorderHeightPx = 2,
     column = 0,
     totalColumns = 1,
     onDragStart,
@@ -23,6 +25,7 @@
     appointment: Appointment;
     slotHeightPx: number;
     slotIntervalMinutes: number;
+    hourlyBorderHeightPx?: number;
     column?: number;
     totalColumns?: number;
     onDragStart?: (appointmentId: string) => void;
@@ -55,43 +58,18 @@
   });
 
   // Calculate CSS position (top) and height
-  // Each slot is slotHeightPx tall and represents slotIntervalMinutes
-  // Position is calculated based on how many slots from midnight (0:00)
-  // Need to account for borders: hourly slots have 2px border-t, half-hour slots have 1px border-t
-  const slotsFromMidnight = $derived(startMinutes / slotIntervalMinutes);
-  const hourlySlotsBefore = $derived(Math.max(Math.floor(startMinutes / 60), 0) + 1);
-  const borderOffset = $derived(hourlySlotsBefore * 2);
-  const topPx = $derived(slotsFromMidnight * slotHeightPx + borderOffset);
-
-  // Calculate how many hour boundaries the appointment crosses INSIDE (not on edges)
-  // This is needed to account for border-t-2 on hourly slots within the appointment
-  const getHourBoundariesCrossed = $derived.by(() => {
-    // Check if start is exactly on the hour
-    const startsOnHour = startMinutes % 60 === 0;
-    // Check if end is exactly on the hour
-    const endsOnHour = endMinutes % 60 === 0;
-
-    // Calculate first hour AFTER start (first hour inside, not on edge)
-    const firstHourInside = startsOnHour ? startMinutes + 60 : Math.ceil(startMinutes / 60) * 60;
-
-    // Calculate last hour BEFORE end (last hour inside, not on edge)
-    const lastHourInside = endsOnHour ? endMinutes - 60 : Math.floor(endMinutes / 60) * 60;
-
-    // Count how many hours are between first and last (inclusive)
-    if (firstHourInside > lastHourInside) {
-      return 0; // No hours inside
-    }
-
-    const boundariesCrossed = (lastHourInside - firstHourInside) / 60 + 1;
-
-    return boundariesCrossed;
-  });
-
-  // Height needs to account for borders within the appointment itself (not on edges)
-  const heightBorderOffset = $derived(getHourBoundariesCrossed * 2);
-  const heightPx = $derived(
-    (durationMinutes / slotIntervalMinutes) * slotHeightPx + heightBorderOffset
+  // Uses shared logic from validators.ts to account for slot borders
+  const position = $derived(
+    calculateAppointmentPosition(
+      appointment.startTime,
+      durationMinutes,
+      slotHeightPx,
+      slotIntervalMinutes,
+      hourlyBorderHeightPx
+    )
   );
+  const topPx = $derived(position.topPx);
+  const heightPx = $derived(position.heightPx);
 
   // Calculate horizontal positioning for overlapping appointments
   // Width is divided by totalColumns, positioned at column index

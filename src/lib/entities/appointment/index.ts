@@ -4,5 +4,7 @@ export {
   isWithinBusinessHours,
   hasConflicts,
   calculateAppointmentLayout,
+  calculateAppointmentPosition,
   type AppointmentLayout,
+  type AppointmentPosition,
 } from "./lib/validators";
