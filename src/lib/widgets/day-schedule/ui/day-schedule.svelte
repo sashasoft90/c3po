@@ -48,15 +48,15 @@
   // Carousel API for syncing
   let carouselApi = $state<CarouselAPI | undefined>();
 
-  // Disable carousel looping during drag operations
+  // Disable carousel looping during drag and resize operations
   $effect(() => {
     if (!carouselApi) return;
 
-    if (draggedAppointmentId) {
-      // Disable looping when dragging
+    if (draggedAppointmentId || isResizing) {
+      // Disable looping when dragging or resizing
       carouselApi.reInit({ loop: false });
     } else {
-      // Re-enable looping when not dragging
+      // Re-enable looping when not dragging or resizing
       carouselApi.reInit({ loop: true });
     }
   });
@@ -216,6 +216,9 @@
   let dropTargetSlot = $state<{ day: DateValue; time: string } | null>(null);
   let dragPreviewSlot = $state<{ day: DateValue; time: string } | null>(null);
 
+  // Resize state
+  let isResizing = $state(false);
+
   function handleAppointmentDragStart(appointmentId: string) {
     draggedAppointmentId = appointmentId;
   }
@@ -225,6 +228,14 @@
     dropTargetSlot = null;
     dragPreviewSlot = null;
     // No need to refresh - optimistic update already applied
+  }
+
+  function handleAppointmentResizeStart() {
+    isResizing = true;
+  }
+
+  function handleAppointmentResizeEnd() {
+    isResizing = false;
   }
 
   function handleSlotDragOver(event: DragEvent, day: DateValue, time: string) {
@@ -440,6 +451,8 @@
                           slotIntervalMinutes={intervalMinutes}
                           onDragStart={handleAppointmentDragStart}
                           onDragEnd={handleAppointmentDragEnd}
+                          onResizeStart={handleAppointmentResizeStart}
+                          onResizeEnd={handleAppointmentResizeEnd}
                         />
                       {/each}
                     </div>

@@ -14,6 +14,8 @@
     slotIntervalMinutes,
     onDragStart,
     onDragEnd,
+    onResizeStart,
+    onResizeEnd,
     class: className = "",
   } = $props<{
     appointment: Appointment;
@@ -21,6 +23,8 @@
     slotIntervalMinutes: number;
     onDragStart?: (appointmentId: string) => void;
     onDragEnd?: () => void;
+    onResizeStart?: () => void;
+    onResizeEnd?: () => void;
     class?: string;
   }>();
 
@@ -93,6 +97,9 @@
     resizeStartDuration = durationMinutes;
     currentResizeHeight = heightPx;
 
+    // Notify parent component that resize started
+    onResizeStart?.();
+
     document.addEventListener("mousemove", handleResizeMove);
     document.addEventListener("mouseup", handleResizeEnd);
   }
@@ -118,6 +125,9 @@
     isResizing = false;
     document.removeEventListener("mousemove", handleResizeMove);
     document.removeEventListener("mouseup", handleResizeEnd);
+
+    // Notify parent component that resize ended
+    onResizeEnd?.();
 
     // Calculate final duration from current height
     const newDurationMinutes = Math.round(
