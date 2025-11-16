@@ -218,17 +218,44 @@
     isResizing = false;
   }
 
-  function handleSlotMouseEnter(day: DateValue, time: string) {
+  function handleSlotMouseEnter(day: DateValue, time: string, event: MouseEvent) {
     if (!draggedAppointmentId) return;
 
-    // Round time to 15-minute intervals
-    const roundedTime = roundTimeToInterval(time, 15);
-    dropTargetSlot = { day, time: roundedTime };
+    // Calculate exact time based on mouse Y position within the slot
+    const target = event.currentTarget as HTMLElement;
+    if (!target) {
+      const roundedTime = roundTimeToInterval(time, 15);
+      dropTargetSlot = { day, time: roundedTime };
+      return;
+    }
+
+    const rect = target.getBoundingClientRect();
+    const relativeY = event.clientY - rect.top;
+
+    // Clamp relativeY to be within bounds (0 to rect.height)
+    const clampedY = Math.max(0, Math.min(relativeY, rect.height - 1));
+    const slotProgress = clampedY / rect.height; // 0 to 1
+
+    // Calculate minutes offset within the slot
+    const minutesOffset = Math.floor(slotProgress * intervalMinutes);
+    const [hours, minutes] = time.split(":").map(Number);
+    const totalMinutes = hours * 60 + minutes + minutesOffset;
+
+    // Round to 15-minute intervals
+    const roundedMinutes = Math.round(totalMinutes / 15) * 15;
+    const finalHours = Math.floor(roundedMinutes / 60);
+    const finalMinutes = roundedMinutes % 60;
+    const finalTime = `${String(finalHours).padStart(2, "0")}:${String(finalMinutes).padStart(2, "0")}`;
+
+    dropTargetSlot = { day, time: finalTime };
   }
 
   function handleSlotMouseLeave() {
-    // Don't clear dropTargetSlot on mouseleave - only clear it when drag ends
-    // This prevents flickering when mouse briefly leaves slot during drag
+    if (!draggedAppointmentId) return;
+
+    // Clear dropTargetSlot when mouse leaves time slots area
+    // This prevents highlighting when dragging outside valid drop zones
+    dropTargetSlot = null;
   }
 
   async function handleSlotMouseUp(day: DateValue, time: string) {
@@ -236,24 +263,26 @@
 
     const appointmentId = draggedAppointmentId;
 
+    // Use the exact time from dropTargetSlot (already rounded to 15-min)
+    // Don't use the slot time parameter as it only has 30-min precision
+    const targetTime = dropTargetSlot?.time || roundTimeToInterval(time, 15);
+    const targetDay = dropTargetSlot?.day || day;
+
     // Clear drop target
     dropTargetSlot = null;
 
     try {
-      // Round to 15-minute intervals
-      const roundedTime = roundTimeToInterval(time, 15);
-
       // Optimistic update - update store immediately for instant UI feedback
       appointmentStore.update(appointmentId, {
-        date: day,
-        startTime: roundedTime,
+        date: targetDay,
+        startTime: targetTime,
       });
 
       // Then sync with API in background
       const { updateAppointment } = await import("@/shared/api/appointments");
       await updateAppointment(appointmentId, {
-        date: day,
-        startTime: roundedTime,
+        date: targetDay,
+        startTime: targetTime,
       });
     } catch (error) {
       console.error("Failed to update appointment:", error);
@@ -339,6 +368,7 @@
               {draggedAppointmentId}
               bind:scrollViewportRef={scrollSync.scrollViewportRefs[dayIndex]}
               onSlotClick={handleSlotClick}
+              onSlotMouseMove={handleSlotMouseEnter}
               onSlotMouseEnter={handleSlotMouseEnter}
               onSlotMouseLeave={handleSlotMouseLeave}
               onSlotMouseUp={handleSlotMouseUp}

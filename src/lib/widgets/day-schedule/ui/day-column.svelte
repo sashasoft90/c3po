@@ -22,6 +22,7 @@
     draggedAppointmentId = null,
     scrollViewportRef = $bindable<HTMLElement | null>(null),
     onSlotClick,
+    onSlotMouseMove,
     onSlotMouseEnter,
     onSlotMouseLeave,
     onSlotMouseUp,
@@ -46,7 +47,8 @@
     draggedAppointmentId?: string | null;
     scrollViewportRef?: HTMLElement | null;
     onSlotClick?: (day: DateValue, time: string) => void;
-    onSlotMouseEnter?: (day: DateValue, time: string) => void;
+    onSlotMouseMove?: (day: DateValue, time: string, event: MouseEvent) => void;
+    onSlotMouseEnter?: (day: DateValue, time: string, event: MouseEvent) => void;
     onSlotMouseLeave?: () => void;
     onSlotMouseUp?: (day: DateValue, time: string) => void;
     onSlotKeydown?: (event: KeyboardEvent, day: DateValue, time: string) => void;
@@ -74,6 +76,7 @@
         {showIntermediateLabels}
         {dropTargetSlot}
         {onSlotClick}
+        {onSlotMouseMove}
         {onSlotMouseEnter}
         {onSlotMouseLeave}
         {onSlotMouseUp}
