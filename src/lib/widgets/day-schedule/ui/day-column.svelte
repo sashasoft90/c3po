@@ -74,7 +74,6 @@
         {day}
         {timeSlots}
         {showIntermediateLabels}
-        {dropTargetSlot}
         {onSlotClick}
         {onSlotMouseMove}
         {onSlotMouseEnter}

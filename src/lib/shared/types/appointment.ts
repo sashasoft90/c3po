@@ -38,6 +38,7 @@ export type AppointmentUpdate = Partial<Omit<Appointment, "id" | "createdAt" | "
 
 /**
  * Calculate end time for an appointment
+ * This is appointment-specific business logic, so it stays here
  */
 export function getAppointmentEndTime(appointment: Appointment): string {
   const [hours, minutes] = appointment.startTime.split(":").map(Number);
@@ -45,30 +46,4 @@ export function getAppointmentEndTime(appointment: Appointment): string {
   const endHours = Math.floor(totalMinutes / 60);
   const endMinutes = totalMinutes % 60;
   return `${String(endHours).padStart(2, "0")}:${String(endMinutes).padStart(2, "0")}`;
-}
-
-/**
- * Convert time string to minutes since midnight
- */
-export function timeToMinutes(time: string): number {
-  const [hours, minutes] = time.split(":").map(Number);
-  return hours * 60 + minutes;
-}
-
-/**
- * Convert minutes since midnight to time string
- */
-export function minutesToTime(minutes: number): string {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
-}
-
-/**
- * Round time to nearest interval (e.g., 15 minutes)
- */
-export function roundTimeToInterval(time: string, intervalMinutes: number = 15): string {
-  const minutes = timeToMinutes(time);
-  const rounded = Math.round(minutes / intervalMinutes) * intervalMinutes;
-  return minutesToTime(rounded);
 }

@@ -14,7 +14,8 @@
   import { fetchAppointments } from "@/shared/api/appointments";
   import { AppointmentCreateDialog } from "@/features/appointment";
   import { useScrollSync } from "@/shared/lib/use-scroll-sync.svelte";
-  import { roundTimeToInterval, getServiceConfig } from "@/shared/types";
+  import { roundTimeToInterval, generateTimeSlots } from "@/shared/lib";
+  import { getServiceConfig } from "@/shared/types";
   import DayColumn from "./day-column.svelte";
 
   let {
@@ -118,19 +119,7 @@
   });
 
   // Generate time slots for the day
-  const timeSlots = $derived.by(() => {
-    const slots: Array<{ time: string; isHourStart: boolean }> = [];
-    const totalMinutes = 24 * 60;
-
-    for (let minutes = 0; minutes < totalMinutes; minutes += intervalMinutes) {
-      const hours = Math.floor(minutes / 60);
-      const mins = minutes % 60;
-      const time = `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
-      slots.push({ time, isHourStart: mins === 0 });
-    }
-
-    return slots;
-  });
+  const timeSlots = $derived(generateTimeSlots(intervalMinutes));
 
   // Format day info
   function formatDayOfWeek(date: DateValue): string {

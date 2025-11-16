@@ -6,7 +6,6 @@
     day,
     timeSlots,
     showIntermediateLabels = false,
-    dropTargetSlot = null,
     onSlotClick,
     onSlotMouseMove,
     onSlotMouseEnter,
@@ -18,7 +17,6 @@
     day: DateValue;
     timeSlots: Array<{ time: string; isHourStart: boolean }>;
     showIntermediateLabels?: boolean;
-    dropTargetSlot?: { day: DateValue; time: string } | null;
     onSlotClick?: (day: DateValue, time: string) => void;
     onSlotMouseMove?: (day: DateValue, time: string, event: MouseEvent) => void;
     onSlotMouseEnter?: (day: DateValue, time: string, event: MouseEvent) => void;
@@ -27,27 +25,6 @@
     onSlotKeydown?: (event: KeyboardEvent, day: DateValue, time: string) => void;
     class?: string;
   }>();
-
-  function isDropTarget(time: string): boolean {
-    if (!dropTargetSlot) return false;
-    if (dropTargetSlot.day.compare(day) !== 0) return false;
-
-    // Check if dropTargetSlot.time falls within this slot's time range
-    // For example, if slot is 08:30 and dropTargetSlot is 08:45, highlight this slot
-    const [slotHours, slotMinutes] = time.split(":").map(Number);
-    const [targetHours, targetMinutes] = dropTargetSlot.time.split(":").map(Number);
-
-    const slotTotalMinutes = slotHours * 60 + slotMinutes;
-    const targetTotalMinutes = targetHours * 60 + targetMinutes;
-
-    // Slot duration from props would be ideal, but we can infer it
-    // Assuming 30-minute slots based on typical usage
-    const slotDuration = 30; // This should ideally come from props
-
-    return (
-      targetTotalMinutes >= slotTotalMinutes && targetTotalMinutes < slotTotalMinutes + slotDuration
-    );
-  }
 </script>
 
 <div class={cn("flex flex-col gap-0", className)}>
