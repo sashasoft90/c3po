@@ -63,8 +63,8 @@ export function useAppointmentDrag(
     startY = touch.clientY;
     hasMoved = false;
 
-    // Add global listeners
-    document.addEventListener("touchmove", handleTouchMove);
+    // Add global listeners with passive: false to allow preventDefault
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
     document.addEventListener("touchend", handleTouchEnd);
     document.addEventListener("touchcancel", handleTouchEnd);
   }
@@ -80,6 +80,11 @@ export function useAppointmentDrag(
       hasMoved = true;
       isDragging = true;
       onDragStart?.(appointmentId);
+    }
+
+    // Prevent scrolling during drag
+    if (isDragging) {
+      event.preventDefault();
     }
   }
 

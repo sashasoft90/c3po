@@ -260,6 +260,10 @@
 
   function handleSlotTouchMove(day: DateValue, time: string, event: TouchEvent) {
     if (!draggedAppointmentId || event.touches.length === 0) return;
+
+    // Prevent scrolling during drag
+    event.preventDefault();
+
     calculateDropTargetTime(
       day,
       time,
