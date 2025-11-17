@@ -37,13 +37,11 @@
 
 <div class={cn("flex flex-row items-center gap-2", className)}>
   {#if !initialized}
-    <!-- Skeleton для всего виджета пока он не инициализирован -->
     <Skeleton class="h-9 w-9 shrink-0" />
     <Skeleton class="h-9 min-w-32 flex-1" />
     <Skeleton class="h-9 w-9 shrink-0" />
     <Skeleton class="h-9 w-18 shrink-0" />
   {:else}
-    <!-- Реальный виджет после инициализации -->
     <Button variant="outline" size="icon" onclick={previousDay} aria-label="Previous day">
       <ChevronLeftIcon />
     </Button>
