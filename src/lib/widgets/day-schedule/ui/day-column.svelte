@@ -17,7 +17,7 @@
     slotHeightPx,
     slotIntervalMinutes,
     hourlyBorderHeightPx,
-    dropTargetSlot: _dropTargetSlot = null,
+    dropTargetSlot = null,
     isDragging = false,
     draggedAppointmentId = null,
     scrollViewportRef = $bindable<HTMLElement | null>(null),
@@ -80,6 +80,7 @@
         {day}
         {timeSlots}
         {showIntermediateLabels}
+        {dropTargetSlot}
         {onSlotClick}
         {onSlotMouseMove}
         {onSlotMouseEnter}
