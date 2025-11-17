@@ -108,9 +108,9 @@
   onmousedown={drag.handleMouseDown}
   ontouchstart={drag.handleTouchStart}
   class={cn(
-    "group absolute z-10 overflow-hidden rounded border-2 border-l-4 px-2 py-1 shadow-md transition-all hover:shadow-lg",
+    "group absolute z-10 overflow-hidden rounded border-2 border-l-6 px-2 py-1 shadow-md transition-all hover:shadow-lg",
     serviceConfig.color,
-    "border-white/30 border-l-white/80 text-white",
+    "border-primary/30 border-l-primary/80 text-white",
     drag.isDragging && "pointer-events-none opacity-30",
     isDraggingOther && "pointer-events-none opacity-50",
     !drag.isDragging && !isDraggingOther && "pointer-events-auto",

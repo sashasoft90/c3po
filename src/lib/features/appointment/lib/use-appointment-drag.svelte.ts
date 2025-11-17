@@ -85,16 +85,89 @@ export function useAppointmentDrag(
     // Prevent scrolling during drag
     if (isDragging) {
       event.preventDefault();
+
+      // Find element under finger and trigger its touch handler
+      const elementUnderFinger = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (elementUnderFinger) {
+        // Trigger touchmove event on the element
+        // Safari-compatible approach: create event without Touch arrays
+        try {
+          const syntheticEvent = new TouchEvent("touchmove", {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            detail: 0,
+          });
+          // Store touch coordinates as custom properties for handlers to access
+          Object.defineProperty(syntheticEvent, "touches", {
+            value: event.touches,
+            writable: false,
+          });
+          Object.defineProperty(syntheticEvent, "targetTouches", {
+            value: event.targetTouches,
+            writable: false,
+          });
+          Object.defineProperty(syntheticEvent, "changedTouches", {
+            value: event.changedTouches,
+            writable: false,
+          });
+          elementUnderFinger.dispatchEvent(syntheticEvent);
+        } catch {
+          // Fallback: directly call ontouchmove handler if exists
+          const htmlElement = elementUnderFinger as HTMLElement;
+          const handler = htmlElement.ontouchmove;
+          if (handler) {
+            handler.call(htmlElement, event);
+          }
+        }
+      }
     }
   }
 
-  function handleTouchEnd() {
+  function handleTouchEnd(event: TouchEvent) {
     // Clean up listeners
     document.removeEventListener("touchmove", handleTouchMove);
     document.removeEventListener("touchend", handleTouchEnd);
     document.removeEventListener("touchcancel", handleTouchEnd);
 
     if (isDragging) {
+      // Dispatch touchend to element under finger (using last known position)
+      const touch = event.changedTouches[0];
+      if (touch) {
+        const elementUnderFinger = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (elementUnderFinger) {
+          // Safari-compatible approach
+          try {
+            const syntheticEvent = new TouchEvent("touchend", {
+              bubbles: true,
+              cancelable: true,
+              view: window,
+              detail: 0,
+            });
+            Object.defineProperty(syntheticEvent, "touches", {
+              value: event.touches,
+              writable: false,
+            });
+            Object.defineProperty(syntheticEvent, "targetTouches", {
+              value: event.targetTouches,
+              writable: false,
+            });
+            Object.defineProperty(syntheticEvent, "changedTouches", {
+              value: event.changedTouches,
+              writable: false,
+            });
+            elementUnderFinger.dispatchEvent(syntheticEvent);
+          } catch {
+            // Fallback: directly call ontouchend handler if exists
+            const htmlElement = elementUnderFinger as HTMLElement;
+            const handler = htmlElement.ontouchend;
+            if (handler) {
+              handler.call(htmlElement, event);
+            }
+          }
+        }
+      }
+
       isDragging = false;
       onDragEnd?.();
     }
