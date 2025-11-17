@@ -1,6 +1,6 @@
 <script lang="ts">
   import { type DateValue, getLocalTimeZone, today } from "@internationalized/date";
-  import Calendar from "../../../shared/ui/calendar/calendar.svelte";
+  import * as Calendar from "@/shared/ui/calendar";
   // noinspection ES6UnusedImports
   import * as Drawer from "@/shared/ui/drawer";
   import { Button } from "@/shared/ui/button";
@@ -43,7 +43,7 @@
       <!--				<Drawer.Title>Select date</Drawer.Title>-->
       <!--				<Drawer.Description>Set your date of birth</Drawer.Description>-->
       <!--			</Drawer.Header>-->
-      <Calendar
+      <Calendar.Calendar
         type="single"
         bind:value
         {locale}
