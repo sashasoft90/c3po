@@ -11,6 +11,9 @@
     onSlotMouseEnter,
     onSlotMouseLeave,
     onSlotMouseUp,
+    onSlotTouchMove,
+    onSlotTouchStart,
+    onSlotTouchEnd,
     onSlotKeydown,
     class: className = "",
   } = $props<{
@@ -22,6 +25,9 @@
     onSlotMouseEnter?: (day: DateValue, time: string, event: MouseEvent) => void;
     onSlotMouseLeave?: () => void;
     onSlotMouseUp?: (day: DateValue, time: string) => void;
+    onSlotTouchMove?: (day: DateValue, time: string, event: TouchEvent) => void;
+    onSlotTouchStart?: (day: DateValue, time: string, event: TouchEvent) => void;
+    onSlotTouchEnd?: (day: DateValue, time: string) => void;
     onSlotKeydown?: (event: KeyboardEvent, day: DateValue, time: string) => void;
     class?: string;
   }>();
@@ -51,6 +57,9 @@
         onmouseenter={(e) => onSlotMouseEnter?.(day, time, e)}
         onmouseleave={() => onSlotMouseLeave?.()}
         onmouseup={() => onSlotMouseUp?.(day, time)}
+        ontouchmove={(e) => onSlotTouchMove?.(day, time, e)}
+        ontouchstart={(e) => onSlotTouchStart?.(day, time, e)}
+        ontouchend={() => onSlotTouchEnd?.(day, time)}
         class={cn(
           "h-8 flex-1 cursor-pointer rounded border-x border-dashed border-border/100 transition-colors",
           "hover:border-border/50 hover:bg-accent/20",

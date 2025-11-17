@@ -17,7 +17,7 @@
     slotHeightPx,
     slotIntervalMinutes,
     hourlyBorderHeightPx,
-    dropTargetSlot = null,
+    dropTargetSlot: _dropTargetSlot = null,
     isDragging = false,
     draggedAppointmentId = null,
     scrollViewportRef = $bindable<HTMLElement | null>(null),
@@ -26,6 +26,9 @@
     onSlotMouseEnter,
     onSlotMouseLeave,
     onSlotMouseUp,
+    onSlotTouchMove,
+    onSlotTouchStart,
+    onSlotTouchEnd,
     onSlotKeydown,
     onAppointmentDragStart,
     onAppointmentDragEnd,
@@ -51,6 +54,9 @@
     onSlotMouseEnter?: (day: DateValue, time: string, event: MouseEvent) => void;
     onSlotMouseLeave?: () => void;
     onSlotMouseUp?: (day: DateValue, time: string) => void;
+    onSlotTouchMove?: (day: DateValue, time: string, event: TouchEvent) => void;
+    onSlotTouchStart?: (day: DateValue, time: string, event: TouchEvent) => void;
+    onSlotTouchEnd?: (day: DateValue, time: string) => void;
     onSlotKeydown?: (event: KeyboardEvent, day: DateValue, time: string) => void;
     onAppointmentDragStart?: (appointmentId: string) => void;
     onAppointmentDragEnd?: () => void;
@@ -79,6 +85,9 @@
         {onSlotMouseEnter}
         {onSlotMouseLeave}
         {onSlotMouseUp}
+        {onSlotTouchMove}
+        {onSlotTouchStart}
+        {onSlotTouchEnd}
         {onSlotKeydown}
       />
 

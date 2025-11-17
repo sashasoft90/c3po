@@ -164,7 +164,7 @@
     return appointmentStore.getById(draggedAppointmentId);
   });
 
-  // Track mouse position during drag for preview
+  // Track mouse and touch position during drag for preview
   if (isBrowser) {
     $effect(() => {
       if (!isDragging) {
@@ -178,10 +178,18 @@
         }
       };
 
+      const handleGlobalTouchMove = (e: TouchEvent) => {
+        if (draggedAppointmentId && e.touches.length > 0) {
+          dragPreviewPosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+      };
+
       document.addEventListener("mousemove", handleGlobalMouseMove);
+      document.addEventListener("touchmove", handleGlobalTouchMove, { passive: false });
 
       return () => {
         document.removeEventListener("mousemove", handleGlobalMouseMove);
+        document.removeEventListener("touchmove", handleGlobalTouchMove);
       };
     });
   }
@@ -207,11 +215,12 @@
     isResizing = false;
   }
 
-  function handleSlotMouseEnter(day: DateValue, time: string, event: MouseEvent) {
-    if (!draggedAppointmentId) return;
-
-    // Calculate exact time based on mouse Y position within the slot
-    const target = event.currentTarget as HTMLElement;
+  function calculateDropTargetTime(
+    day: DateValue,
+    time: string,
+    clientY: number,
+    target: HTMLElement | null
+  ) {
     if (!target) {
       const roundedTime = roundTimeToInterval(time, 15);
       dropTargetSlot = { day, time: roundedTime };
@@ -219,7 +228,7 @@
     }
 
     const rect = target.getBoundingClientRect();
-    const relativeY = event.clientY - rect.top;
+    const relativeY = clientY - rect.top;
 
     // Clamp relativeY to be within bounds (0 to rect.height)
     const clampedY = Math.max(0, Math.min(relativeY, rect.height - 1));
@@ -244,6 +253,21 @@
     dropTargetSlot = { day, time: finalTime };
   }
 
+  function handleSlotMouseEnter(day: DateValue, time: string, event: MouseEvent) {
+    if (!draggedAppointmentId) return;
+    calculateDropTargetTime(day, time, event.clientY, event.currentTarget as HTMLElement);
+  }
+
+  function handleSlotTouchMove(day: DateValue, time: string, event: TouchEvent) {
+    if (!draggedAppointmentId || event.touches.length === 0) return;
+    calculateDropTargetTime(
+      day,
+      time,
+      event.touches[0].clientY,
+      event.currentTarget as HTMLElement
+    );
+  }
+
   function handleSlotMouseLeave() {
     if (!draggedAppointmentId) return;
 
@@ -252,7 +276,7 @@
     dropTargetSlot = null;
   }
 
-  async function handleSlotMouseUp(day: DateValue, time: string) {
+  async function performAppointmentDrop(day: DateValue, time: string) {
     if (!draggedAppointmentId) return;
 
     const appointmentId = draggedAppointmentId;
@@ -287,6 +311,14 @@
         appointmentStore.setAll(response.data);
       }
     }
+  }
+
+  async function handleSlotMouseUp(day: DateValue, time: string) {
+    await performAppointmentDrop(day, time);
+  }
+
+  async function handleSlotTouchEnd(day: DateValue, time: string) {
+    await performAppointmentDrop(day, time);
   }
 
   // Appointment creation
@@ -366,6 +398,9 @@
               onSlotMouseEnter={handleSlotMouseEnter}
               onSlotMouseLeave={handleSlotMouseLeave}
               onSlotMouseUp={handleSlotMouseUp}
+              onSlotTouchMove={handleSlotTouchMove}
+              onSlotTouchStart={handleSlotTouchMove}
+              onSlotTouchEnd={handleSlotTouchEnd}
               onSlotKeydown={handleSlotKeydown}
               onAppointmentDragStart={handleAppointmentDragStart}
               onAppointmentDragEnd={handleAppointmentDragEnd}

@@ -149,6 +149,7 @@
     role="button"
     tabindex="0"
     onmousedown={resize.handleResizeStart}
+    ontouchstart={resize.handleTouchResizeStart}
     class="absolute right-0 bottom-0 left-0 h-2 cursor-ns-resize opacity-0 transition-opacity group-hover:opacity-60 hover:opacity-100"
     style="background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.3))"
   ></div>
