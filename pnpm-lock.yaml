@@ -69,6 +69,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      country-flag-icons:
+        specifier: ^1.6.1
+        version: 1.6.1
       embla-carousel-svelte:
         specifier: ^8.6.0
         version: 8.6.0(svelte@5.43.6)
@@ -123,6 +126,9 @@ importers:
       svelte-check:
         specifier: ^4.3.2
         version: 4.3.3(picomatch@4.0.3)(svelte@5.43.6)(typescript@5.9.3)
+      svelte-tel-input:
+        specifier: ^3.6.1
+        version: 3.6.1(svelte@5.43.6)
       sveltekit-superforms:
         specifier: ^2.28.1
         version: 2.28.1(@sveltejs/kit@2.47.3(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.43.6)(vite@7.2.2(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.43.6)(vite@7.2.2(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)))(@types/json-schema@7.0.15)(esbuild@0.25.12)(svelte@5.43.6)(typescript@5.9.3)
@@ -1368,6 +1374,9 @@ packages:
       typescript:
         optional: true
 
+  country-flag-icons@1.6.1:
+    resolution: {integrity: sha512-Xz65n4sCUi1CEZ3miUfElcuYmPa2NKjSZCqVoLBuRqUSwXKs+FekBu8VJXRcDcdkPdsIDx55R+15a+Zx/SaBmQ==}
+
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
@@ -2203,6 +2212,9 @@ packages:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
 
+  libphonenumber-js@1.10.43:
+    resolution: {integrity: sha512-M/iPACJGsTvEy8QmUY4K0SoIFB71X2j7y2JvUMYzUXUxCNmiU+NTfHdz7gt+dC48BVfBzZi2oO6s9TDGllCfxA==}
+
   libphonenumber-js@1.12.26:
     resolution: {integrity: sha512-MagMOuqEXB2Pa90cWE+BoCmcKJx+de5uBIicaUkQ+uiEslZ0OBMNOkSZT/36syXNHu68UeayTxPm3DYM2IHoLQ==}
 
@@ -2908,6 +2920,12 @@ packages:
     peerDependenciesMeta:
       svelte:
         optional: true
+
+  svelte-tel-input@3.6.1:
+    resolution: {integrity: sha512-rUys8jXv4BTmpIub/GpOkZaxLYwrNZgh0tEFeo9ltl09rCxqFAbppT1XUL8W8fMHC6EzaivK28z0vhzsQZyBXA==}
+    engines: {node: '>= 18', npm: '>= 8', pnpm: '>= 8', yarn: '>= 1'}
+    peerDependencies:
+      svelte: ^3.58.0 || ^4.0.0 || ^5.0.0
 
   svelte-toolbelt@0.10.6:
     resolution: {integrity: sha512-YWuX+RE+CnWYx09yseAe4ZVMM7e7GRFZM6OYWpBKOb++s+SQ8RBIMMe+Bs/CznBMc0QPLjr+vDBxTAkozXsFXQ==}
@@ -4545,6 +4563,8 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
+  country-flag-icons@1.6.1: {}
+
   cross-spawn@7.0.6:
     dependencies:
       path-key: 3.1.1
@@ -5535,6 +5555,8 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
+  libphonenumber-js@1.10.43: {}
+
   libphonenumber-js@1.12.26:
     optional: true
 
@@ -6204,6 +6226,11 @@ snapshots:
       postcss-scss: 4.0.9(postcss@8.5.6)
       postcss-selector-parser: 7.1.0
     optionalDependencies:
+      svelte: 5.43.6
+
+  svelte-tel-input@3.6.1(svelte@5.43.6):
+    dependencies:
+      libphonenumber-js: 1.10.43
       svelte: 5.43.6
 
   svelte-toolbelt@0.10.6(@sveltejs/kit@2.47.3(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.43.6)(vite@7.2.2(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.43.6)(vite@7.2.2(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.43.6):

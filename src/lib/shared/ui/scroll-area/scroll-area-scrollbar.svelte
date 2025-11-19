@@ -1,3 +1,7 @@
+<!--
+	Installed from @ieedan/shadcn-svelte-extras
+-->
+
 <script lang="ts">
   import { ScrollArea as ScrollAreaPrimitive } from "bits-ui";
   import { cn, type WithoutChild } from "$lib/shared/utils.js";

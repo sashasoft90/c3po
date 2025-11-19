@@ -1,3 +1,7 @@
+<!--
+	Installed from @ieedan/shadcn-svelte-extras
+-->
+
 <script lang="ts">
   import { ScrollArea as ScrollAreaPrimitive } from "bits-ui";
   import { Scrollbar } from "./index.js";
@@ -5,7 +9,6 @@
 
   let {
     ref = $bindable(null),
-    viewportRef = $bindable(null),
     class: className,
     orientation = "vertical",
     scrollbarXClasses = "",
@@ -16,7 +19,6 @@
     orientation?: "vertical" | "horizontal" | "both" | undefined;
     scrollbarXClasses?: string | undefined;
     scrollbarYClasses?: string | undefined;
-    viewportRef?: HTMLElement | null;
   } = $props();
 </script>
 
@@ -27,7 +29,6 @@
   {...restProps}
 >
   <ScrollAreaPrimitive.Viewport
-    bind:ref={viewportRef}
     data-slot="scroll-area-viewport"
     class="size-full rounded-[inherit] ring-ring/10 outline-ring/50 transition-[color,box-shadow] focus-visible:ring-4 focus-visible:outline-1 dark:ring-ring/20 dark:outline-ring/40"
   >
