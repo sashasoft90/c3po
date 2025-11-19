@@ -9,7 +9,7 @@
   import { ScrollArea } from "$lib/shared/ui/scroll-area";
   import CheckIcon from "@lucide/svelte/icons/check";
   import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
-  import { cn } from "$lib/shared/utils/utils";
+  import { cn } from "$lib/shared/utils";
   import Flag from "./flag.svelte";
   import type { Country, CountryCode } from "svelte-tel-input/types";
 
@@ -73,7 +73,7 @@
     }}
   >
     <Command.Root>
-      <Command.Input placeholder="Search country..." />
+      <Command.Input class="border-none focus-visible:ring-0 text-base" placeholder="Search country..." />
       <Command.List>
         <ScrollArea class="h-72">
           <Command.Empty>No country found.</Command.Empty>
