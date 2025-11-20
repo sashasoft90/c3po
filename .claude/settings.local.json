@@ -13,7 +13,8 @@
       "Bash(pnpm lint:*)",
       "Bash(pnpm format:*)",
       "WebFetch(domain:github.com)",
-      "Bash(pnpm dlx:*)"
+      "Bash(pnpm dlx:*)",
+      "Bash(uv run alembic:*)"
     ],
     "deny": [],
     "ask": []
