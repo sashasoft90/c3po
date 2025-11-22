@@ -129,6 +129,79 @@ pnpm --version   # должно быть 9.x.x или 10.x.x
 
 ---
 
+### Шаг 5.1: (Опционально) Установка удобных CLI инструментов (5 минут)
+
+**Действие:** Установить современные замены стандартных утилит для удобной работы:
+
+```bash
+# zoxide - умный cd (быстрая навигация по директориям)
+curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+
+# eza - современный ls с иконками и цветами
+sudo apt install -y eza
+
+# bat - cat с подсветкой синтаксиса
+sudo apt install -y bat
+
+# fzf - fuzzy finder для поиска файлов/команд
+sudo apt install -y fzf
+
+# ripgrep - быстрый grep (уже используется в проекте)
+sudo apt install -y ripgrep
+
+# tldr - упрощенные man страницы с примерами
+sudo apt install -y tldr
+
+# Настроить zoxide
+echo 'eval "$(zoxide init bash)"' >> ~/.bashrc
+
+# Добавить алиасы для удобства
+cat >> ~/.bashrc << 'EOF'
+
+# Modern CLI tools aliases
+alias ls='eza --icons'
+alias ll='eza -la --icons --git'
+alias lt='eza --tree --level=2 --icons'
+alias cat='batcat'  # Ubuntu называет bat как batcat
+alias find='fdfind'
+EOF
+
+# Применить изменения
+source ~/.bashrc
+```
+
+**Использование zoxide (умный cd):**
+```bash
+# Обычно нужно:
+cd ~/projects/c3po
+cd ~/projects/c3po/backend
+cd ~/projects/c3po/src/lib
+
+# С zoxide достаточно:
+z c3po      # прыгнет в ~/projects/c3po
+z backend   # прыгнет в ~/projects/c3po/backend
+z lib       # прыгнет в ~/projects/c3po/src/lib
+
+# zoxide запоминает часто используемые директории!
+```
+
+**Использование других инструментов:**
+```bash
+# eza вместо ls (красиво!)
+ls              # цветной вывод с иконками
+ll              # подробный список с git статусом
+lt              # дерево директорий
+
+# bat вместо cat (подсветка синтаксиса)
+cat package.json    # с подсветкой!
+
+# fzf - интерактивный поиск
+Ctrl+R              # поиск по истории команд
+Alt+C               # поиск директорий
+```
+
+---
+
 ### Шаг 6: Установка Python 3.12 и uv (2 минуты)
 
 **Действие:** Python 3.12 уже есть в Ubuntu 24.04, установим только uv:
