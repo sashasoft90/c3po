@@ -223,6 +223,136 @@ uv --version
 
 ---
 
+### Шаг 6.1: (Опционально) Дополнительные инструменты для разработки (10 минут)
+
+**Действие:** Установить полезные инструменты для комфортной разработки:
+
+#### Быстрая установка всего сразу:
+
+```bash
+# Установить основные инструменты
+sudo apt install -y \
+  htop \
+  ncdu \
+  git-delta \
+  jq \
+  httpie \
+  tmux \
+  tree \
+  vim
+
+# lazygit - визуальный Git интерфейс
+LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+tar xf lazygit.tar.gz lazygit
+sudo install lazygit /usr/local/bin
+rm lazygit lazygit.tar.gz
+
+# GitHub CLI
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+sudo apt update
+sudo apt install -y gh
+
+# Starship - красивый промпт
+curl -sS https://starship.rs/install.sh | sh -s -- -y
+echo 'eval "$(starship init bash)"' >> ~/.bashrc
+
+# Настроить git delta
+git config --global core.pager delta
+git config --global interactive.diffFilter 'delta --color-only'
+git config --global delta.navigate true
+git config --global delta.side-by-side true
+
+# Базовая конфигурация tmux
+cat > ~/.tmux.conf << 'EOF'
+# Использовать Ctrl+A вместо Ctrl+B
+set -g prefix C-a
+unbind C-b
+
+# Нумерация окон с 1
+set -g base-index 1
+
+# Мышь
+set -g mouse on
+
+# Цвета
+set -g default-terminal "screen-256color"
+EOF
+
+# Применить изменения
+source ~/.bashrc
+
+echo "✅ Всё установлено!"
+```
+
+#### Описание инструментов:
+
+**Git и версионный контроль:**
+- **lazygit** ⭐⭐⭐ - лучший TUI для Git (просто введите `lazygit`)
+- **git-delta** - красивый git diff с подсветкой синтаксиса
+- **gh** - GitHub CLI (создание PR, issues прямо из терминала)
+
+**Системные утилиты:**
+- **htop** - красивый мониторинг процессов (лучше чем `top`)
+- **ncdu** - анализ использования диска (интерактивный `du`)
+- **tmux** - мультиплексор терминала (множество окон в одном терминале)
+
+**Разработка:**
+- **jq** - парсер JSON (форматирование API ответов)
+- **httpie** - красивый HTTP клиент (лучше curl для тестирования API)
+- **tree** - визуализация структуры директорий
+
+**Красота:**
+- **starship** - быстрый и красивый промпт с git статусом
+
+#### Примеры использования:
+
+```bash
+# lazygit - визуальный Git
+lazygit
+# Навигация: j/k (вверх/вниз), Enter (открыть), a (stage all), c (commit)
+
+# httpie - тестирование API
+http GET localhost:8000/health
+http POST localhost:8000/api/v1/auth/register email=test@test.com password=test123 first_name=Test last_name=User
+
+# jq - форматирование JSON
+curl localhost:8000/health | jq '.'
+curl localhost:8000/health | jq '.database.status'
+
+# ncdu - анализ диска
+ncdu ~/projects/c3po
+
+# tmux - множество окон
+tmux new -s dev           # создать сессию "dev"
+# Ctrl+A c                # новое окно
+# Ctrl+A n/p              # следующее/предыдущее окно
+# Ctrl+A d                # отсоединиться
+tmux attach -t dev        # присоединиться обратно
+
+# gh - GitHub CLI (после gh auth login)
+gh pr create              # создать PR
+gh pr list                # список PR
+gh issue create           # создать issue
+```
+
+#### Настройка красивого терминала (Windows Terminal):
+
+1. **Установить Nerd Font:**
+   - Скачать **JetBrainsMono Nerd Font**: https://www.nerdfonts.com/font-downloads
+   - Установить шрифт в Windows
+
+2. **Настроить Windows Terminal:**
+   - Settings → Profiles → Ubuntu-24.04
+   - Appearance → Font face → **JetBrainsMono Nerd Font**
+   - Color scheme → One Half Dark (или другая тема)
+   - Apply
+
+3. **Starship промпт** теперь покажет иконки!
+
+---
+
 ### Шаг 7: Настройка Git (2 минуты)
 
 **Действие:** Настроить Git под свои данные:
