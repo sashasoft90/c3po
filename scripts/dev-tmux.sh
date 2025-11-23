@@ -77,7 +77,7 @@ tmux send-keys -t $SESSION:backend "uv run uvicorn app.main:app --reload --host 
 tmux new-window -t $SESSION -n "frontend" -c $PROJECT_DIR
 tmux send-keys -t $SESSION:frontend "clear" C-m
 tmux send-keys -t $SESSION:frontend "echo -e '${GREEN}⚡ Starting Frontend (SvelteKit)...${NC}'" C-m
-tmux send-keys -t $SESSION:frontend "pnpm dev" C-m
+tmux send-keys -t $SESSION:frontend "pnpm dev --host" C-m
 
 # Window 3: Database migrations / Shell
 tmux new-window -t $SESSION -n "shell" -c "$PROJECT_DIR/backend"

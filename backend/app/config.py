@@ -93,6 +93,7 @@ class Settings(BaseSettings):
 
     # CORS
     BACKEND_CORS_ORIGINS: str = Field(default="http://localhost:5173,http://localhost:4173")
+    FRONTEND_URL: str = Field(default="http://localhost:5173")  # Frontend base URL for emails
 
     @property
     def cors_origins(self) -> list[str]:

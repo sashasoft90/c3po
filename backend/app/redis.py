@@ -2,18 +2,20 @@
 
 from typing import Any
 
+import redis
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 
 from app.config import settings
 
-# Global Redis client instance
+# Global Redis client instances
 redis_client: Redis | None = None
+redis_sync_client: redis.Redis | None = None
 
 
 async def get_redis() -> Redis:
     """
-    Get Redis client instance.
+    Get async Redis client instance.
 
     Usage in FastAPI routes:
         @router.get("/cached/")
@@ -27,10 +29,35 @@ async def get_redis() -> Redis:
     return redis_client
 
 
+def get_redis_sync() -> redis.Redis:
+    """
+    Get synchronous Redis client instance (for rate limiting).
+
+    Returns:
+        Synchronous Redis client
+    """
+    global redis_sync_client
+    if redis_sync_client is None:
+        redis_sync_client = redis.from_url(
+            str(settings.REDIS_URL),
+            encoding="utf-8",
+            decode_responses=True,
+            max_connections=10,
+        )
+    return redis_sync_client
+
+
 async def init_redis() -> None:
-    """Initialize Redis connection pool."""
-    global redis_client
+    """Initialize Redis connection pools."""
+    global redis_client, redis_sync_client
     redis_client = Redis.from_url(
+        str(settings.REDIS_URL),
+        encoding="utf-8",
+        decode_responses=True,
+        max_connections=10,
+    )
+    # Initialize sync client too
+    redis_sync_client = redis.from_url(
         str(settings.REDIS_URL),
         encoding="utf-8",
         decode_responses=True,
@@ -39,11 +66,14 @@ async def init_redis() -> None:
 
 
 async def close_redis() -> None:
-    """Close Redis connection."""
-    global redis_client
+    """Close Redis connections."""
+    global redis_client, redis_sync_client
     if redis_client:
         await redis_client.aclose()
         redis_client = None
+    if redis_sync_client:
+        redis_sync_client.close()
+        redis_sync_client = None
 
 
 async def check_redis_connection() -> dict[str, Any]:
