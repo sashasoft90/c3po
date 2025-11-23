@@ -67,12 +67,25 @@ async def init_redis() -> None:
 
 async def close_redis() -> None:
     """Close Redis connections."""
+    import asyncio
     global redis_client, redis_sync_client
+
     if redis_client:
-        await redis_client.aclose()
+        try:
+            # Check if event loop is still running
+            loop = asyncio.get_event_loop()
+            if not loop.is_closed():
+                await redis_client.aclose()
+        except Exception:
+            # If event loop is closed or any error, just set to None
+            pass
         redis_client = None
+
     if redis_sync_client:
-        redis_sync_client.close()
+        try:
+            redis_sync_client.close()
+        except Exception:
+            pass
         redis_sync_client = None
 
 

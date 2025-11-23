@@ -21,7 +21,8 @@
       "Bash(curl:*)",
       "Bash(python3:*)",
       "Bash(docker exec:*)",
-      "Bash(uv run pytest:*)"
+      "Bash(uv run pytest:*)",
+      "Bash(uv pip:*)"
     ],
     "deny": [],
     "ask": []

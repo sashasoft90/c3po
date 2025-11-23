@@ -26,7 +26,7 @@ class EmailService:
             MAIL_SSL_TLS=settings.MAIL_SSL_TLS,
             USE_CREDENTIALS=settings.MAIL_USE_CREDENTIALS,
             VALIDATE_CERTS=settings.MAIL_VALIDATE_CERTS,
-            TEMPLATE_FOLDER=Path(__file__).parent.parent / "templates" / "email",
+            # TEMPLATE_FOLDER=Path(__file__).parent.parent / "templates" / "email",
         )
         self.fastmail = FastMail(self.conf)
 

@@ -6,7 +6,8 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from slowapi import _rate_limit_exceeded_handler
+# noinspection PyProtectedMember
+from slowapi import _rate_limit_exceeded_handler  # type: ignore
 from slowapi.errors import RateLimitExceeded
 
 from app.api import api_router
@@ -50,7 +51,10 @@ app = FastAPI(
 )
 
 # Add rate limiter
-limiter.slowapi_startup()
+# todo will be fixed in https://github.com/laurentS/slowapi/pull/243
+#  limiter.slowapi_startup()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
 
 # Configure CORS
 app.add_middleware(

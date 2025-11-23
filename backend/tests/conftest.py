@@ -32,7 +32,7 @@ def get_test_settings() -> Settings:
     return settings
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     """Create event loop for pytest-asyncio."""
     policy = asyncio.get_event_loop_policy()
@@ -42,7 +42,7 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     loop.close()
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def test_engine():
     """Create test database engine."""
     engine = create_async_engine(
@@ -79,13 +79,18 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
         await session.rollback()
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function", autouse=True)
 async def test_redis():
     """Initialize test Redis connection."""
+    # Always reinitialize for each test to ensure clean state
     await init_redis()
     yield
-    # Don't close Redis here due to event loop issues
-    # It will be closed when the process exits
+    # Clean up: close Redis connections properly
+    try:
+        await close_redis()
+    except Exception:
+        # Ignore errors during cleanup
+        pass
 
 
 @pytest.fixture
@@ -102,12 +107,23 @@ async def override_get_db(db_session: AsyncSession):
     return _override_get_db
 
 
-@pytest_asyncio.fixture
-async def test_app(override_get_db, test_redis):
-    """Create test FastAPI application."""
-    # Override dependencies
-    app.dependency_overrides[get_db] = override_get_db
+@pytest.fixture
+def client() -> TestClient:
+    """Create test client for simple tests without database."""
+    # Override settings
     app.dependency_overrides[get_settings] = get_test_settings
+    with TestClient(app) as client:
+        yield client
+    # Clear overrides
+    app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def test_app(override_get_db):
+    """Create test FastAPI application with database."""
+    # Override settings and database
+    app.dependency_overrides[get_settings] = get_test_settings
+    app.dependency_overrides[get_db] = override_get_db
 
     yield app
 
@@ -115,15 +131,9 @@ async def test_app(override_get_db, test_redis):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
-def client(test_app) -> TestClient:
-    """Create test client."""
-    return TestClient(test_app)
-
-
 @pytest_asyncio.fixture
 async def async_client(test_app) -> AsyncGenerator[AsyncClient, None]:
-    """Create async test client."""
+    """Create async test client with database."""
     from httpx import ASGITransport
 
     async with AsyncClient(transport=ASGITransport(app=test_app), base_url="http://test") as ac:
