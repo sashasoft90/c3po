@@ -118,6 +118,7 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 ## Ключевые компоненты
 
 ### 1. Аутентификация (OAuth2 + JWT)
+
 - **OAuth2 Password Flow** - стандартный протокол для логина/регистрации
 - **Access Token (JWT)** - короткоживущий токен (15-30 мин) для API запросов
 - **Refresh Token** - долгоживущий токен (7-30 дней), хранится в Redis
@@ -126,6 +127,7 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 - **Rate limiting** через Redis для защиты от брутфорса
 
 Схема работы:
+
 ```http request
 # 1. Логин (OAuth2)
 POST /auth/login
@@ -147,17 +149,20 @@ POST /auth/logout
 ```
 
 ### 2. База данных (PostgreSQL)
+
 - SQLAlchemy 2.0 с async поддержкой
 - asyncpg драйвер
 - Alembic для миграций
 
 ### 3. Redis
+
 - Кеширование данных
 - Хранение сессий/refresh токенов
 - Rate limiting
 - Очередь задач для email (arq)
 
 ### 4. Email рассылка
+
 - fastapi-mail для отправки
 - Фоновые задачи через arq + Redis
 - Шаблоны писем (Jinja2)
@@ -202,6 +207,7 @@ volumes:
 ## Дополнительные компоненты и соображения
 
 ### CORS (критично для dev и prod)
+
 ```python
 # app/main.py
 from fastapi.middleware.cors import CORSMiddleware
@@ -216,25 +222,31 @@ app.add_middleware(
 ```
 
 ### Временные зоны
+
 - Хранение всех дат в UTC (PostgreSQL `timestamptz`)
 - Конвертация в локальную зону на фронтенде
 - Библиотека: `zoneinfo` (встроенная в Python 3.9+)
 - SQLAlchemy: `DateTime(timezone=True)`
 
 ### Система уведомлений
+
 **Email (обязательно):**
+
 - Подтверждение регистрации (с токеном активации)
 - Подтверждение записи на приём
 - Напоминание за 24/1 час до приёма (через arq scheduler)
 - Отмена записи
 
 **Опционально:**
+
 - SMS через Twilio (для критичных напоминаний)
 - Push-уведомления в браузере (Web Push API)
 - WebSocket для real-time уведомлений
 
 ### Бизнес-логика записей
+
 **Требует проработки:**
+
 - [ ] Кто может создавать слоты? (админ/врач/мастер)
 - [ ] Публичная запись или только после регистрации?
 - [ ] Политика отмены (за сколько часов, штрафы?)
@@ -243,6 +255,7 @@ app.add_middleware(
 - [ ] Статусы записи: `pending`, `confirmed`, `cancelled`, `completed`, `no_show`
 
 ### Роли и права доступа (RBAC)
+
 ```python
 # Минимальный набор ролей:
 class UserRole(enum.Enum):
@@ -259,6 +272,7 @@ class UserRole(enum.Enum):
 Зависимости: `fastapi-users` или самописная система с декораторами
 
 ### Логирование и мониторинг
+
 ```toml
 # pyproject.toml - дополнительные зависимости
 dependencies = [
@@ -270,6 +284,7 @@ dependencies = [
 ```
 
 **Настройка loguru:**
+
 ```python
 # app/logging_config.py
 from loguru import logger
@@ -314,6 +329,7 @@ async def get_user(user_id: int):
 ```
 
 **Health Check endpoints:**
+
 ```python
 GET /health        # Базовая проверка
 GET /health/db     # Проверка PostgreSQL
@@ -321,6 +337,7 @@ GET /health/redis  # Проверка Redis
 ```
 
 ### Тестирование
+
 ```
 backend/tests/
 ├── conftest.py              # Фикстуры pytest
@@ -336,6 +353,7 @@ backend/tests/
 ```
 
 Зависимости:
+
 ```toml
 [project.optional-dependencies]
 dev = [
@@ -350,13 +368,16 @@ dev = [
 Цель: **80%+ coverage**
 
 ### Безопасность
+
 **Уже включено:**
+
 - JWT токены с истечением
 - Bcrypt для паролей
 - SQLAlchemy ORM (защита от SQL injection)
 - FastAPI автоматически экранирует XSS
 
 **Нужно добавить:**
+
 - **Rate Limiting** через Redis:
   ```python
   # slowapi или fastapi-limiter
@@ -369,6 +390,7 @@ dev = [
 - **Helmet-подобные заголовки** (CSP, X-Frame-Options)
 
 Зависимости:
+
 ```toml
 dependencies = [
     # ...
@@ -377,6 +399,7 @@ dependencies = [
 ```
 
 ### API Versioning
+
 ```python
 # Структура URL:
 /api/v1/auth/login
@@ -389,6 +412,7 @@ app.include_router(users_router, prefix="/api/v1")
 ```
 
 ### CI/CD Pipeline
+
 ```yaml
 # .github/workflows/backend.yml (пример)
 name: Backend CI
@@ -415,12 +439,15 @@ jobs:
 ```
 
 ### Документация
+
 **Автоматическая (из коробки FastAPI):**
+
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 - OpenAPI JSON: `http://localhost:8000/openapi.json`
 
 **Ручная:**
+
 - `backend/README.md` - инструкции для разработчиков
 - `docs/api.md` - описание бизнес-логики для фронтенда
 

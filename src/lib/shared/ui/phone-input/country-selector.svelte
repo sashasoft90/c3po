@@ -73,7 +73,10 @@
     }}
   >
     <Command.Root>
-      <Command.Input class="border-none focus-visible:ring-0 text-base" placeholder="Search country..." />
+      <Command.Input
+        class="border-none text-base focus-visible:ring-0"
+        placeholder="Search country..."
+      />
       <Command.List>
         <ScrollArea class="h-72">
           <Command.Empty>No country found.</Command.Empty>

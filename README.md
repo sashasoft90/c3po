@@ -86,6 +86,7 @@ uv run pytest
 ## 🏗️ Tech Stack
 
 ### Frontend
+
 - **SvelteKit** + **Svelte 5** - UI framework с новыми runes
 - **TypeScript** - Type safety
 - **Feature-Sliced Design** - Architecture methodology
@@ -94,6 +95,7 @@ uv run pytest
 - **Vitest** + **Playwright** - Testing (unit + E2E)
 
 ### Backend
+
 - **FastAPI** - Modern Python web framework
 - **PostgreSQL** - Database with asyncpg driver
 - **Redis** - Caching and session management
@@ -115,11 +117,13 @@ uv run pytest
 - **ReDoc:** http://localhost:8000/redoc
 
 ### Authentication
+
 - `POST /api/v1/auth/register` - Register user
 - `POST /api/v1/auth/login` - Login
 - `GET /api/v1/auth/me` - Current user
 
 ### Appointments
+
 - `POST /api/v1/appointments/` - Create appointment
 - `GET /api/v1/appointments/` - List appointments
 - `PATCH /api/v1/appointments/{id}` - Update appointment

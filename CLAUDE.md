@@ -143,7 +143,6 @@ This project uses Svelte 5's new reactive primitives:
 - Extends generated `.svelte-kit/tsconfig.json`
 - Path aliases handled by SvelteKit configuration
 
-
 #### ⚠️ CRITICAL Bug Workaround
 
 CRITICAL: Follow these guidelines when using tools operating on file paths EXCEPT `Bash` in any skill or agent. Otherwise, they will not work correctly.
@@ -164,25 +163,25 @@ CRITICAL: Follow these guidelines when using tools operating on file paths EXCEP
 
 ```json
 {
-    "type": "tool_use",
-    "id": "...",
-    "name": "Read",
-    "input": {
-        "file_path": "C:\\path\\to\\some\\file.txt"
-    }
+  "type": "tool_use",
+  "id": "...",
+  "name": "Read",
+  "input": {
+    "file_path": "C:\\path\\to\\some\\file.txt"
+  }
 }
 ```
 
 ```json
 {
-    "type": "tool_use",
-    "id": "...",
-    "name": "Edit",
-    "input": {
-        "file_path": "C:\\path\\to\\some\\file.txt",
-        "old_string": "...",
-        "new_string": "..."
-    }
+  "type": "tool_use",
+  "id": "...",
+  "name": "Edit",
+  "input": {
+    "file_path": "C:\\path\\to\\some\\file.txt",
+    "old_string": "...",
+    "new_string": "..."
+  }
 }
 ```
 
@@ -190,12 +189,12 @@ CRITICAL: Follow these guidelines when using tools operating on file paths EXCEP
 
 ```json
 {
-    "type": "tool_use",
-    "id": "...",
-    "name": "Read",
-    "input": {
-        "file_path": "/c/path/to/some/file.txt"
-    }
+  "type": "tool_use",
+  "id": "...",
+  "name": "Read",
+  "input": {
+    "file_path": "/c/path/to/some/file.txt"
+  }
 }
 ```
 

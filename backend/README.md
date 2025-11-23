@@ -40,28 +40,33 @@ FastAPI backend for the C3PO appointment scheduling system.
 ### Installation
 
 1. **Navigate to backend directory:**
+
    ```bash
    cd backend
    ```
 
 2. **Install dependencies:**
+
    ```bash
    uv sync
    ```
 
 3. **Set up environment variables:**
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
 4. **Start PostgreSQL and Redis:**
+
    ```bash
    # Using Docker Compose (see docker-compose.yml in root)
    docker-compose up -d postgres redis
    ```
 
 5. **Run database migrations:**
+
    ```bash
    uv run alembic upgrade head
    ```
@@ -72,6 +77,7 @@ FastAPI backend for the C3PO appointment scheduling system.
    ```
 
 The API will be available at:
+
 - **API:** http://localhost:8000
 - **Swagger UI:** http://localhost:8000/docs
 - **ReDoc:** http://localhost:8000/redoc
@@ -263,6 +269,7 @@ The backend uses Redis for caching to improve performance and reduce database lo
 ### What is Cached
 
 **User Data** (`app/utils/security.py`, `app/api/users.py`):
+
 - `get_current_user()` - **TTL: 5 minutes**
   - Called on every authenticated request
   - Reduces DB queries by 10-20x
@@ -270,6 +277,7 @@ The backend uses Redis for caching to improve performance and reduce database lo
   - Admin endpoint for fetching users
 
 **Appointments** (`app/api/appointments.py`):
+
 - `read_appointments()` - **TTL: 1 minute**
   - List endpoint with pagination support
   - Shorter TTL because appointments change frequently
@@ -279,12 +287,14 @@ The backend uses Redis for caching to improve performance and reduce database lo
 Caches are automatically invalidated when data changes:
 
 **User Updates:**
+
 ```python
 # app/api/users.py
 await cache_service.delete(f"user:{user_id}")
 ```
 
 **Appointment Operations:**
+
 ```python
 # Create, Update, Delete
 await cache_service.clear_pattern(f"appointments:user:{user_id}:*")
@@ -293,11 +303,12 @@ await cache_service.clear_pattern(f"appointments:user:{user_id}:*")
 ### TTL Reasoning
 
 | Data Type    | TTL       | Reason                                      |
-|--------------|-----------|---------------------------------------------|
+| ------------ | --------- | ------------------------------------------- |
 | Users        | 5 minutes | Changes rarely (email, profile updates)     |
 | Appointments | 1 minute  | Changes frequently (create, update, cancel) |
 
 **Trade-offs:**
+
 - ⬆️ Higher TTL = Less DB load, but potentially stale data
 - ⬇️ Lower TTL = Fresh data, but more DB queries
 
@@ -313,7 +324,7 @@ appointments:user:{user_id}:skip:{skip}:limit:{limit}  # Appointments list
 **Expected improvements:**
 
 | Endpoint             | Without Cache | With Cache | Speedup       |
-|----------------------|---------------|------------|---------------|
+| -------------------- | ------------- | ---------- | ------------- |
 | `GET /auth/me`       | ~100-200ms    | ~5-10ms    | **10-20x** 🚀 |
 | `GET /appointments/` | ~50-100ms     | ~5ms       | **10-20x** 🚀 |
 | `GET /users/{id}`    | ~80-150ms     | ~5ms       | **15-30x** 🚀 |
@@ -345,6 +356,7 @@ ttl = await cache_service.get_ttl("my_key")
 ## Deployment
 
 See `docs/backend-plan.md` for detailed deployment instructions including:
+
 - Docker/Docker Compose setup
 - CI/CD pipeline examples
 - Production environment configuration
