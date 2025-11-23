@@ -16,6 +16,7 @@ from app.database import get_db
 from app.models.user import User
 from app.redis import cache_exists
 from app.schemas.auth import TokenPayload
+from app.services.cache import cache_service
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -127,6 +128,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     """
     Get current authenticated user from JWT token.
 
+    Uses Redis cache to avoid database queries on every request.
+
     Args:
         token: JWT token from Authorization header
         db: Database session
@@ -138,8 +141,19 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         HTTPException: If user not found or token invalid
     """
     token_data = await verify_token(token)
+    user_id = token_data.sub
 
-    stmt = select(User).where(User.id == token_data.sub)
+    # Try to get user from cache first
+    cache_key = f"user:{user_id}"
+    cached_user = await cache_service.get(cache_key)
+
+    if cached_user:
+        # Reconstruct User object from cached data
+        user = User(**cached_user)
+        return user
+
+    # Cache miss - fetch from database
+    stmt = select(User).where(User.id == user_id)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
 
@@ -148,6 +162,21 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
 
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is inactive")
+
+    # Cache user data for 5 minutes (don't cache password_hash)
+    user_dict = {
+        "id": user.id,
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "phone": user.phone,
+        "role": user.role.value,
+        "is_active": user.is_active,
+        "is_verified": user.is_verified,
+        "created_at": user.created_at.isoformat() if user.created_at else None,
+        "updated_at": user.updated_at.isoformat() if user.updated_at else None,
+    }
+    await cache_service.set(cache_key, user_dict, expire=300)  # 5 minutes
 
     return user
 

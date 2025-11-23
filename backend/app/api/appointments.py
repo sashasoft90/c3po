@@ -8,6 +8,7 @@ from app.database import get_db
 from app.models.appointment import Appointment
 from app.models.user import User
 from app.schemas.appointment import AppointmentCreate, AppointmentRead, AppointmentUpdate
+from app.services.cache import cache_service
 from app.utils.security import get_current_user
 
 router = APIRouter()
@@ -34,6 +35,9 @@ async def create_appointment(
     await db.commit()
     await db.refresh(appointment)
 
+    # Invalidate appointments list cache
+    await cache_service.delete(f"appointments:user:{current_user.id}")
+
     return appointment
 
 
@@ -47,6 +51,8 @@ async def read_appointments(
     """
     Get all appointments for current user.
 
+    Uses cache for better performance (cache TTL: 1 minute).
+
     Args:
         skip: Number of records to skip (pagination)
         limit: Maximum number of records to return
@@ -56,10 +62,37 @@ async def read_appointments(
     Returns:
         List of appointments
     """
+    # Cache key includes pagination params
+    cache_key = f"appointments:user:{current_user.id}:skip:{skip}:limit:{limit}"
+    cached_appointments = await cache_service.get(cache_key)
+
+    if cached_appointments:
+        # Return cached appointments (already serialized)
+        return [Appointment(**apt) for apt in cached_appointments]
+
+    # Cache miss - fetch from database
     stmt = select(Appointment).where(Appointment.user_id == current_user.id).offset(skip).limit(limit)
 
     result = await db.execute(stmt)
     appointments = result.scalars().all()
+
+    # Cache appointments for 1 minute (shorter TTL as appointments change frequently)
+    appointments_data = [
+        {
+            "id": apt.id,
+            "user_id": apt.user_id,
+            "title": apt.title,
+            "description": apt.description,
+            "start_time": apt.start_time.isoformat(),
+            "end_time": apt.end_time.isoformat(),
+            "status": apt.status.value,
+            "notes": apt.notes,
+            "created_at": apt.created_at.isoformat() if apt.created_at else None,
+            "updated_at": apt.updated_at.isoformat() if apt.updated_at else None,
+        }
+        for apt in appointments
+    ]
+    await cache_service.set(cache_key, appointments_data, expire=60)  # 1 minute
 
     return list(appointments)
 
@@ -134,6 +167,9 @@ async def update_appointment(
     for field, value in update_data.items():
         setattr(appointment, field, value)
 
+    # Invalidate appointments list cache
+    await cache_service.clear_pattern(f"appointments:user:{appointment.user_id}:*")
+
     await db.commit()
     await db.refresh(appointment)
 
@@ -166,5 +202,9 @@ async def delete_appointment(
     if appointment.user_id != current_user.id and current_user.role.value != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this appointment")
 
+    user_id = appointment.user_id  # Save before deleting
     await db.delete(appointment)
     await db.commit()
+
+    # Invalidate appointments list cache
+    await cache_service.clear_pattern(f"appointments:user:{user_id}:*")
