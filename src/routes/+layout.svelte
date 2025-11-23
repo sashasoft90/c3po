@@ -3,35 +3,9 @@
   import favicon from "@/app/assets/favicon.svg";
   import { NavBar } from "@/widgets/nav-bar";
   import { default as navBarItems } from "@/entities/nav-bar";
-  import { page } from "$app/state";
-  import { goto } from "$app/navigation";
-  import { browser } from "$app/environment";
-  import { isAuthenticated } from "@/shared/api/auth";
 
   let { children } = $props();
   let pageTitle = $state<string | undefined>(undefined);
-
-  $effect(() => {
-    console.debug(pageTitle);
-  });
-
-  // Check authentication on client-side
-  $effect(() => {
-    if (browser) {
-      const isLoginPage = page.url.pathname === "/login";
-      const authenticated = isAuthenticated();
-
-      // Redirect to login if not authenticated and not on login page
-      if (!authenticated && !isLoginPage) {
-        goto("/login");
-      }
-
-      // Redirect to home if authenticated and on login page
-      if (authenticated && isLoginPage) {
-        goto("/");
-      }
-    }
-  });
 </script>
 
 <svelte:head>

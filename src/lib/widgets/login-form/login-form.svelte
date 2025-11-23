@@ -11,33 +11,17 @@
   import { Input } from "@/shared/ui/input";
   import { cn } from "@/shared/utils.js";
   import type { HTMLAttributes } from "svelte/elements";
-  import { login } from "@/shared/api/auth";
-  import { goto } from "$app/navigation";
+  import { enhance } from "$app/forms";
 
-  let { class: className, ...restProps }: HTMLAttributes<HTMLDivElement> = $props();
+  let {
+    class: className,
+    form,
+    ...restProps
+  }: HTMLAttributes<HTMLDivElement> & { form?: any } = $props();
 
   const id = $props.id();
 
-  let email = $state("");
-  let password = $state("");
-  let error = $state<string | undefined>(undefined);
   let loading = $state(false);
-
-  async function handleSubmit(e: Event) {
-    e.preventDefault();
-    error = undefined;
-    loading = true;
-
-    const result = await login({ email, password });
-
-    if (result.error) {
-      error = result.error;
-      loading = false;
-    } else {
-      // Redirect to home page after successful login
-      goto("/");
-    }
-  }
 </script>
 
 <div class={cn("flex flex-col gap-6", className)} {...restProps}>
@@ -47,7 +31,16 @@
       <Card.Description>Login with your Apple or Google account</Card.Description>
     </Card.Header>
     <Card.Content>
-      <form onsubmit={handleSubmit}>
+      <form
+        method="POST"
+        use:enhance={() => {
+          loading = true;
+          return async ({ update }) => {
+            await update();
+            loading = false;
+          };
+        }}
+      >
         <FieldGroup>
           <Field>
             <Button variant="outline" type="button">
@@ -74,13 +67,7 @@
           </FieldSeparator>
           <Field>
             <FieldLabel for="email-{id}">Email</FieldLabel>
-            <Input
-              id="email-{id}"
-              type="email"
-              placeholder="m@example.com"
-              bind:value={email}
-              required
-            />
+            <Input id="email-{id}" name="email" type="email" placeholder="m@example.com" required />
           </Field>
           <Field>
             <div class="flex items-center">
@@ -89,11 +76,11 @@
                 Forgot your password?
               </a>
             </div>
-            <Input id="password-{id}" type="password" bind:value={password} required />
+            <Input id="password-{id}" name="password" type="password" required />
           </Field>
-          {#if error}
+          {#if form?.error}
             <Field>
-              <FieldDescription class="text-destructive">{error}</FieldDescription>
+              <FieldDescription class="text-destructive">{form.error}</FieldDescription>
             </Field>
           {/if}
           <Field>

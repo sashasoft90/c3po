@@ -1,126 +1,148 @@
-import type { ApiResponse } from "./appointments";
+/**
+ * Authentication API client
+ * Integrates with FastAPI backend using JWT tokens stored in HTTP-only cookies
+ */
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
+import { API_ENDPOINTS } from "@/shared/config/api";
+import type { User, LoginRequest, RegisterRequest, Token } from "@/shared/types/auth";
+
+export interface ApiResponse<T> {
+  data?: T;
+  error?: string;
 }
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  name: string;
-}
-
-const STORAGE_KEY = "c3po_auth_token";
-const USER_KEY = "c3po_user";
 
 /**
- * Get current user from localStorage
+ * Login user with backend API
+ * Tokens will be stored in HTTP-only cookies by the server
  */
-export function getCurrentUser(): User | null {
-  if (typeof window === "undefined") return null;
-
+export async function login(credentials: LoginRequest): Promise<ApiResponse<Token>> {
   try {
-    const stored = localStorage.getItem(USER_KEY);
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
+    const response = await fetch(API_ENDPOINTS.auth.login, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(credentials),
+      credentials: "include", // Include cookies in request
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      return { error: error.detail || "Failed to login" };
+    }
+
+    const data: Token = await response.json();
+    return { data };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Network error" };
   }
 }
 
 /**
- * Get auth token from localStorage
+ * Register new user
  */
-export function getAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(STORAGE_KEY);
-}
-
-/**
- * Save auth token and user to localStorage
- */
-function saveAuth(token: string, user: User): void {
-  if (typeof window === "undefined") return;
-
-  localStorage.setItem(STORAGE_KEY, token);
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
-}
-
-/**
- * Clear auth data from localStorage
- */
-export function clearAuth(): void {
-  if (typeof window === "undefined") return;
-
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(USER_KEY);
-}
-
-/**
- * Login user
- * TODO: Replace with real API call to POST /api/v1/auth/login
- */
-export async function login(data: LoginRequest): Promise<ApiResponse<User>> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 300));
-
+export async function register(userData: RegisterRequest): Promise<ApiResponse<User>> {
   try {
-    // Mock user for demo
-    const user: User = {
-      id: crypto.randomUUID(),
-      email: data.email,
-      name: data.email.split("@")[0],
-    };
+    const response = await fetch(API_ENDPOINTS.auth.register, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+      credentials: "include",
+    });
 
-    const token = crypto.randomUUID();
-    saveAuth(token, user);
+    if (!response.ok) {
+      const error = await response.json();
+      return { error: error.detail || "Failed to register" };
+    }
 
-    return { data: user };
+    const data: User = await response.json();
+    return { data };
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Failed to login" };
+    return { error: error instanceof Error ? error.message : "Network error" };
   }
 }
 
 /**
- * Register user
- * TODO: Replace with real API call to POST /api/v1/auth/register
+ * Get current authenticated user
  */
-export async function register(data: RegisterRequest): Promise<ApiResponse<User>> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 300));
-
+export async function getCurrentUser(): Promise<ApiResponse<User>> {
   try {
-    const user: User = {
-      id: crypto.randomUUID(),
-      email: data.email,
-      name: data.name,
-    };
+    const response = await fetch(API_ENDPOINTS.auth.me, {
+      credentials: "include",
+    });
 
-    const token = crypto.randomUUID();
-    saveAuth(token, user);
+    if (!response.ok) {
+      return { error: "Not authenticated" };
+    }
 
-    return { data: user };
+    const data: User = await response.json();
+    return { data };
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Failed to register" };
+    return { error: error instanceof Error ? error.message : "Network error" };
   }
 }
 
 /**
  * Logout user
  */
-export async function logout(): Promise<void> {
-  clearAuth();
+export async function logout(): Promise<ApiResponse<void>> {
+  try {
+    const response = await fetch(API_ENDPOINTS.auth.logout, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      return { error: "Failed to logout" };
+    }
+
+    return { data: undefined };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Network error" };
+  }
 }
 
 /**
- * Check if user is authenticated
+ * Server-side: Verify access token by calling /auth/me
+ * Used in hooks.server.ts
  */
-export function isAuthenticated(): boolean {
-  return getAuthToken() !== null;
+export async function verifyAccessToken(accessToken: string): Promise<boolean> {
+  try {
+    const response = await fetch(API_ENDPOINTS.auth.me, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Server-side: Refresh access token
+ * Used in hooks.server.ts
+ */
+export async function refreshAccessToken(refreshToken: string): Promise<ApiResponse<Token>> {
+  try {
+    const response = await fetch(API_ENDPOINTS.auth.refresh, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+
+    if (!response.ok) {
+      return { error: "Failed to refresh token" };
+    }
+
+    const data: Token = await response.json();
+    return { data };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Network error" };
+  }
 }

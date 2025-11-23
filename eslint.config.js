@@ -18,6 +18,10 @@ export default defineConfig(
   prettier,
   ...svelte.configs.prettier,
   {
+    // Note: there should be no other properties in this object
+    ignores: ["backend/**/*", "backend/**/*.py"],
+  },
+  {
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
     },
