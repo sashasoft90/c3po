@@ -1,5 +1,5 @@
 <script lang="ts">
-  import "../app.css";
+  import "../../app.css";
   import favicon from "@/app/assets/favicon.svg";
   import { NavBar } from "@/widgets/nav-bar";
   import { default as navBarItems } from "@/entities/nav-bar";
