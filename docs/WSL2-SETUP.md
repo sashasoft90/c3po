@@ -528,7 +528,7 @@ docker ps
 mkdir -p ~/.local/bin
 
 # Скачать Claude Code (замените VERSION на актуальную)
-wget https://github.com/anthropics/claude-code/releases/download/v0.x.x/claude-code-linux-x64.tar.gz -O /tmp/claude-code.tar.gz
+curl -fsSL https://claude.ai/install.sh | bash
 
 # Распаковать
 tar -xzf /tmp/claude-code.tar.gz -C ~/.local/bin/
