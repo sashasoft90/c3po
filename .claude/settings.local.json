@@ -16,7 +16,10 @@
       "Bash(pnpm dlx:*)",
       "Bash(uv run alembic:*)",
       "Bash(tree:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(test -f:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []
