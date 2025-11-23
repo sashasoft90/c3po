@@ -15,7 +15,8 @@
       "WebFetch(domain:github.com)",
       "Bash(pnpm dlx:*)",
       "Bash(uv run alembic:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []
