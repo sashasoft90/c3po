@@ -71,9 +71,16 @@ FastAPI backend for the C3PO appointment scheduling system.
    uv run alembic upgrade head
    ```
 
-6. **Start the development server:**
+6. **Seed the database with test data (optional but recommended):**
+   ```bash
+   uv run nox -s seed
+   ```
+
+7. **Start the development server:**
    ```bash
    uv run uvicorn app.main:app --reload
+   # or via nox:
+   uv run nox -s dev
    ```
 
 The API will be available at:
@@ -82,7 +89,47 @@ The API will be available at:
 - **Swagger UI:** http://localhost:8000/docs
 - **ReDoc:** http://localhost:8000/redoc
 
+## Seeding Test Data
+
+To populate the database with test users and appointments:
+
+```bash
+uv run nox -s seed
+```
+
+This creates:
+- **1 Admin:** admin@test.com / admin123
+- **2 Staff (Masters):** master1@test.com, master2@test.com / master123
+- **3 Clients:** client1-3@test.com / client123
+- **15+ Sample appointments** with various statuses
+
+The seed script is idempotent - you can run it multiple times safely.
+
 ## Development Commands
+
+### Using Nox (Recommended)
+
+```bash
+# Seed database with test data
+uv run nox -s seed
+
+# Start development server
+uv run nox -s dev
+
+# Run tests
+uv run nox -s test
+
+# Run linter
+uv run nox -s lint
+
+# Format code
+uv run nox -s format
+
+# Apply migrations
+uv run nox -s migrate
+```
+
+### Direct Commands
 
 ```bash
 # Start development server with auto-reload

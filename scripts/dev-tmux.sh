@@ -85,10 +85,13 @@ tmux send-keys -t $SESSION:shell "clear" C-m
 tmux send-keys -t $SESSION:shell "echo -e '${BLUE}🛠️  Shell - Ready for commands${NC}'" C-m
 tmux send-keys -t $SESSION:shell "echo ''" C-m
 tmux send-keys -t $SESSION:shell "echo -e '${YELLOW}Useful commands:${NC}'" C-m
-tmux send-keys -t $SESSION:shell "echo '  uv run alembic upgrade head     - Apply migrations'" C-m
+tmux send-keys -t $SESSION:shell "echo '  uv run nox -s seed              - Seed test data (users + appointments)'" C-m
+tmux send-keys -t $SESSION:shell "echo '  uv run nox -s migrate           - Apply migrations'" C-m
 tmux send-keys -t $SESSION:shell "echo '  uv run alembic revision -m ...  - Create migration'" C-m
-tmux send-keys -t $SESSION:shell "echo '  uv run pytest                   - Run tests'" C-m
+tmux send-keys -t $SESSION:shell "echo '  uv run nox -s test              - Run tests'" C-m
 tmux send-keys -t $SESSION:shell "echo '  docker-compose ps               - Check services'" C-m
+tmux send-keys -t $SESSION:shell "echo ''" C-m
+tmux send-keys -t $SESSION:shell "echo -e '${GREEN}Tip: Run seed to create test users (admin, staff, clients)${NC}'" C-m
 tmux send-keys -t $SESSION:shell "echo ''" C-m
 
 # Window 4: Git

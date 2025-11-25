@@ -1,7 +1,13 @@
 {
   "permissions": {
-    "allow": ["Bash(.env)", "Bash(xargs ls:*)"],
+    "allow": [
+      "Bash(.env)",
+      "Bash(xargs ls:*)",
+      "Bash(uv sync:*)",
+      "Bash(uv run:*)"
+    ],
     "deny": [],
     "ask": []
-  }
+  },
+  "outputStyle": "default"
 }
