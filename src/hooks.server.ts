@@ -8,31 +8,32 @@ import { verifyAccessToken, refreshAccessToken } from "@/shared/api/auth";
 import type { Cookies } from "@sveltejs/kit";
 
 const PUBLIC_PATHS = ["/login"];
+const API_PATHS = ["/logout"]; // API endpoints that should skip auth redirect logic
 
 /**
  * Check if user is authenticated by validating access token
  */
-async function isAuthenticated(cookies: Cookies): Promise<boolean> {
+async function isAuthenticated(cookies: Cookies, fetchFn: typeof fetch): Promise<boolean> {
   const accessToken = cookies.get("access_token");
 
   if (!accessToken) {
     return false;
   }
 
-  return verifyAccessToken(accessToken);
+  return verifyAccessToken(accessToken, fetchFn);
 }
 
 /**
  * Try to refresh access token using refresh token
  */
-async function tryRefreshToken(cookies: Cookies): Promise<boolean> {
+async function tryRefreshToken(cookies: Cookies, fetchFn: typeof fetch): Promise<boolean> {
   const refreshToken = cookies.get("refresh_token");
 
   if (!refreshToken) {
     return false;
   }
 
-  const result = await refreshAccessToken(refreshToken);
+  const result = await refreshAccessToken(refreshToken, fetchFn);
 
   if (result.error || !result.data) {
     return false;
@@ -59,15 +60,21 @@ async function tryRefreshToken(cookies: Cookies): Promise<boolean> {
 }
 
 export const handle: Handle = async ({ event, resolve }) => {
-  const { url, cookies } = event;
+  const { url, cookies, fetch } = event;
   const isPublicPath = PUBLIC_PATHS.includes(url.pathname);
+  const isApiPath = API_PATHS.includes(url.pathname);
+
+  // Skip auth logic for API endpoints - they handle auth themselves
+  if (isApiPath) {
+    return resolve(event);
+  }
 
   // Check authentication
-  let authenticated = await isAuthenticated(cookies);
+  let authenticated = await isAuthenticated(cookies, fetch);
 
-  // If not authenticated, try to refresh token
+  // If not authenticated, try to refresh the token
   if (!authenticated) {
-    authenticated = await tryRefreshToken(cookies);
+    authenticated = await tryRefreshToken(cookies, fetch);
   }
 
   // Redirect logic

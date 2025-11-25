@@ -7,7 +7,7 @@ import { fail, redirect, type Actions } from "@sveltejs/kit";
 import { login } from "@/shared/api/auth";
 
 export const actions: Actions = {
-  default: async ({ request, cookies }) => {
+  default: async ({ request, cookies, fetch }) => {
     const data = await request.formData();
     const email = data.get("email");
     const password = data.get("password");
@@ -17,11 +17,13 @@ export const actions: Actions = {
     }
 
     // Call login API
-    const result = await login({
-      email: email.toString(),
-      password: password.toString(),
-    });
-
+    const result = await login(
+      {
+        email: email.toString(),
+        password: password.toString(),
+      },
+      fetch
+    );
     if (result.error) {
       return fail(401, { error: result.error });
     }

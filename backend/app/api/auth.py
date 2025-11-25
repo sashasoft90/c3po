@@ -1,8 +1,9 @@
 """Authentication endpoints."""
 
-from datetime import timedelta
+import uuid
+from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,6 +21,8 @@ from app.utils.security import (
     get_password_hash,
     verify_password,
 )
+
+from app.utils.security import verify_token
 
 router = APIRouter()
 
@@ -89,8 +92,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is inactive")
 
-    # Create tokens
-    access_token = create_access_token(subject=user.id)
+    access_token_jti = str(uuid.uuid4())
+    access_token = create_access_token(subject=user.id, jti=access_token_jti)
     refresh_token_id, user_id = create_refresh_token(subject=user.id)
 
     # Store refresh token in Redis
@@ -123,8 +126,8 @@ async def login_json(login_data: LoginRequest, db: AsyncSession = Depends(get_db
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is inactive")
 
-    # Create tokens
-    access_token = create_access_token(subject=user.id)
+    access_token_jti = str(uuid.uuid4())
+    access_token = create_access_token(subject=user.id, jti=access_token_jti)
     refresh_token_id, user_id = create_refresh_token(subject=user.id)
 
     # Store refresh token in Redis
@@ -157,8 +160,8 @@ async def refresh_token(refresh_data: RefreshTokenRequest) -> Token:
     if not user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
 
-    # Create new tokens
-    access_token = create_access_token(subject=int(user_id))
+    access_token_jti = str(uuid.uuid4())
+    access_token = create_access_token(subject=int(user_id), jti=access_token_jti)
     new_refresh_token_id, _ = create_refresh_token(subject=int(user_id))
 
     # Store new refresh token in Redis
@@ -177,21 +180,34 @@ async def refresh_token(refresh_data: RefreshTokenRequest) -> Token:
 
 
 @router.post("/logout")
-async def logout(current_user: User = Depends(get_current_user)) -> dict[str, str]:
+async def logout(request: Request, current_user: User = Depends(get_current_user)) -> dict[str, str]:
     """
     Logout current user (invalidate tokens).
 
+    Extracts the access token from the Authorization header, verifies it,
+    and adds its JTI to the blacklist in Redis.
+
     Args:
+        request: FastAPI request object
         current_user: Current authenticated user
 
     Returns:
         Success message
-
-    Note:
-        In a production system, you would also blacklist the current access token.
-        This requires storing the token's JTI in Redis until expiration.
     """
-    # TODO: Add access token to blacklist if JTI is included in token
+
+    # Extract token from Authorization header
+    authorization: str | None = request.headers.get("Authorization")
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.replace("Bearer ", "")
+
+        # Verify token and get JTI
+        token_data = await verify_token(token)
+
+        if token_data.jti:
+            # Add access token to blacklist (expire after token expiration)
+            ttl = token_data.exp - int(datetime.now(timezone.utc).timestamp())
+            if ttl > 0:
+                await cache_set(f"token:blacklist:{token_data.jti}", "1", expire=ttl)
 
     return {"message": "Successfully logged out"}
 

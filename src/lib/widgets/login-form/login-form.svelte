@@ -13,11 +13,11 @@
   import type { HTMLAttributes } from "svelte/elements";
   import { enhance } from "$app/forms";
 
-  let {
-    class: className,
-    form,
-    ...restProps
-  }: HTMLAttributes<HTMLDivElement> & { form?: any } = $props();
+  interface Props extends HTMLAttributes<HTMLDivElement> {
+    form?: { error?: string };
+  }
+
+  let { class: className, form, ...restProps }: Props = $props();
 
   const id = $props.id();
 

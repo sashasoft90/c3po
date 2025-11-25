@@ -104,6 +104,53 @@ This project uses Svelte 5's new reactive primitives:
 
 ## Key Patterns
 
+### API Integration (CRITICAL)
+
+**⚠️ ALWAYS use existing API functions from `src/lib/shared/api/*` - NEVER duplicate fetch logic!**
+
+When working with backend API calls:
+
+1. **Check `src/lib/shared/api/` first** - API functions are already implemented for auth, appointments, etc.
+2. **Use shared functions in both client and server code**:
+   - Client-side: Call directly (uses cookies automatically)
+   - Server-side: Pass required tokens/data as parameters
+3. **Update existing functions** if they need to support new use cases (e.g., server-side usage)
+4. **Never write raw `fetch()` calls to API endpoints** in components or server actions
+
+**Example - Correct approach:**
+
+```typescript
+// ✅ CORRECT - Use shared API function
+import { logout } from "@/shared/api/auth";
+
+export const actions = {
+  logout: async ({ cookies }) => {
+    const token = cookies.get("access_token");
+    await logout(token); // Reuse existing function
+  },
+};
+```
+
+**Example - Incorrect approach:**
+
+```typescript
+// ❌ WRONG - Duplicating fetch logic
+export const actions = {
+  logout: async ({ cookies }) => {
+    await fetch(API_ENDPOINTS.auth.logout, {
+      /* ... */
+    }); // Don't do this!
+  },
+};
+```
+
+**Benefits:**
+
+- Single source of truth for API logic
+- Consistent error handling
+- Type safety across client and server
+- Easier to maintain and update
+
 ### Navigation
 
 - Routes defined in `src/lib/entities/nav-bar/routes.ts` as `NavBarItem[]`
