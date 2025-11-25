@@ -16,7 +16,9 @@ router = APIRouter()
 
 @router.post("/", response_model=AppointmentRead, status_code=status.HTTP_201_CREATED)
 async def create_appointment(
-    appointment_in: AppointmentCreate, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+    appointment_in: AppointmentCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ) -> Appointment:
     """
     Create a new appointment.

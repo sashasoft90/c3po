@@ -4,7 +4,10 @@
       "Bash(.env)",
       "Bash(xargs ls:*)",
       "Bash(uv sync:*)",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(curl:*)",
+      "Bash(pnpm lint:*)"
     ],
     "deny": [],
     "ask": []

@@ -4,4 +4,8 @@
     <option name="sdkName" value="uv (backend)" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="uv (backend)" project-jdk-type="Python SDK" />
+  <component name="RuffConfiguration">
+    <option name="enabled" value="true" />
+    <option name="executableDiscoveryMode" value="PATH" />
+  </component>
 </project>

@@ -58,9 +58,7 @@ async def update_user_me(
 
 
 @router.get("/{user_id}", response_model=UserRead)
-async def read_user(
-    user_id: int, db: AsyncSession = Depends(get_db), _: User = Depends(require_role("admin"))
-) -> User:
+async def read_user(user_id: int, db: AsyncSession = Depends(get_db), _: User = Depends(require_role("admin"))) -> User:
     """
     Get user by ID (admin only).
 

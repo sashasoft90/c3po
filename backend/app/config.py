@@ -84,9 +84,7 @@ class Settings(BaseSettings):
     def validate_secret_key(cls, v: str, info) -> str:
         """Ensure SECRET_KEY is secure in production."""
         environment = info.data.get("ENVIRONMENT", "development")
-        if environment == "production" and (
-            "change-this" in v.lower() or len(v) < 32
-        ):
+        if environment == "production" and ("change-this" in v.lower() or len(v) < 32):
             msg = "SECRET_KEY must be at least 32 characters and changed in production"
             raise ValueError(msg)
         return v

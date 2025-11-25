@@ -35,9 +35,7 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def create_access_token(
-    subject: int | str, expires_delta: timedelta | None = None, jti: str | None = None
-) -> str:
+def create_access_token(subject: int | str, expires_delta: timedelta | None = None, jti: str | None = None) -> str:
     """
     Create JWT access token.
 

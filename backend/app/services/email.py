@@ -184,7 +184,7 @@ Your appointment has been confirmed!
 
 Title: {title}
 Date & Time: {start_str} - {end_str}
-{f'Description: {appointment_details.get("description")}' if appointment_details.get("description") else ""}
+{f"Description: {appointment_details.get('description')}" if appointment_details.get("description") else ""}
 
 We look forward to seeing you!
 

@@ -68,6 +68,7 @@ async def init_redis() -> None:
 async def close_redis() -> None:
     """Close Redis connections."""
     import asyncio
+
     global redis_client, redis_sync_client
 
     if redis_client:

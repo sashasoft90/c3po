@@ -6,6 +6,7 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+
 # noinspection PyProtectedMember
 from slowapi import _rate_limit_exceeded_handler  # type: ignore
 from slowapi.errors import RateLimitExceeded
@@ -86,7 +87,9 @@ async def health_check() -> dict[str, Any]:
     db_status = await check_db_connection()
     redis_status = await check_redis_connection()
 
-    overall_status = "healthy" if db_status["status"] == "healthy" and redis_status["status"] == "healthy" else "unhealthy"
+    overall_status = (
+        "healthy" if db_status["status"] == "healthy" and redis_status["status"] == "healthy" else "unhealthy"
+    )
 
     return {
         "status": overall_status,
